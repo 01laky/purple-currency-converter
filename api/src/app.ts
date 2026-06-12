@@ -1,4 +1,5 @@
 import { createHash, randomUUID } from 'node:crypto';
+import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
 import swagger from '@fastify/swagger';
 import swaggerUi from '@fastify/swagger-ui';
@@ -17,7 +18,7 @@ import { convertAmount } from './conversion/service.js';
 import type { ConvertResult } from './conversion/types.js';
 import { LANGUAGES } from './i18n/constants.js';
 import { TRANSLATIONS, formatEnglishMessage } from './i18n/loader.js';
-import { CURRENCIES_CACHE_CONTROL } from './lib/constants.js';
+import { CURRENCIES_CACHE_CONTROL, DEFAULT_FRONTEND_ORIGIN } from './lib/constants.js';
 import { EnvVar, ErrorCode, ErrorKey } from './lib/enums.js';
 import { resolveSwaggerStaticDir } from './lib/swagger.js';
 import type { ApiErrorBody, BuildAppDeps, ErrorParams } from './lib/types.js';
@@ -340,6 +341,18 @@ export const buildApp = async (deps?: BuildAppDeps): Promise<FastifyInstance> =>
 
 	// CSP would block Swagger UI's inline scripts and styles at /docs
 	await app.register(helmet, { contentSecurityPolicy: false });
+
+	// CORS for the LOCAL web dev only (§10): web:5173 → api:3000 is cross-origin; production
+	// is same-origin through the Router (0.10.0) — no CORS exists there. Exact origin, never *.
+	if (nodeEnv !== 'production') {
+		const frontendOrigin = process.env[EnvVar.FRONTEND_ORIGIN];
+		await app.register(cors, {
+			origin:
+				frontendOrigin !== undefined && frontendOrigin !== ''
+					? frontendOrigin
+					: DEFAULT_FRONTEND_ORIGIN,
+		});
+	}
 
 	await app.register(swagger, {
 		openapi: {

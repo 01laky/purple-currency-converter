@@ -11,6 +11,9 @@ export const LOCAL_DYNAMO_CREDENTIALS: { accessKeyId: string; secretAccessKey: s
 
 export const DEFAULT_STATS_TABLE = 'ConversionStats';
 
+// CORS exists for the local web dev only (§10) — production is same-origin through the Router
+export const DEFAULT_FRONTEND_ORIGIN = 'http://localhost:5173';
+
 // /api/currencies HTTP cache (§3) — the browser/CDN side; the server side is the provider cache
 export const CURRENCIES_CACHE_CONTROL = 'public, max-age=3600';
 

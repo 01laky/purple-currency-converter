@@ -23,6 +23,7 @@
 		"result": "Výsledok",
 		"numberOfCalculations": "Počet vykonaných výpočtov",
 		"topTargetCurrency": "Najčastejšia cieľová mena",
-		"totalAmountEur": "Celková suma v EUR"
+		"totalAmountEur": "Celková suma v EUR",
+		"retry": "Skúsiť znova"
 	}
 }

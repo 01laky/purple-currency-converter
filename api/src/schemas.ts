@@ -30,8 +30,16 @@ export const errorResponseSchema = z.object({
 	}),
 });
 
-const translationTreeSchema: z.ZodType<TranslationTree> = z.lazy(() =>
-	z.record(z.string(), z.union([z.string(), translationTreeSchema])),
+// Bounded to the fixed §3 catalog depth (≤ 3 levels) instead of a recursive z.lazy: the
+// recursion serialized into OpenAPI as a dangling $ref (#/components/schemas/schema0) that no
+// real generator accepts — Swagger UI silently tolerated it, orval refused (found at v0.9.0).
+// A deeper tree now fails the response serializer loudly (rule 24) instead of hiding.
+const translationTreeSchema: z.ZodType<TranslationTree> = z.record(
+	z.string(),
+	z.union([
+		z.string(),
+		z.record(z.string(), z.union([z.string(), z.record(z.string(), z.string())])),
+	]),
 );
 
 export const initResponseSchema = z.object({

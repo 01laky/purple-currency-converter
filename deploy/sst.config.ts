@@ -23,8 +23,8 @@ export default $config({
 		const oerApiKey = new sst.Secret('OerApiKey');
 
 		const api = new sst.aws.Function('Api', {
-			// The repo root hosts the API until the v0.9.0 move — the handler lives outside deploy/
-			handler: '../src/lambda.handler',
+			// The API lives in api/ since the v0.9.0 move — the handler lives outside deploy/
+			handler: '../api/src/lambda.handler',
 			url: true,
 			// link = IAM least privilege (§9): the function may touch exactly its one table
 			link: [stats, oerApiKey],
@@ -50,8 +50,8 @@ export default $config({
 				// The Swagger UI assets do not exist in the bundle (§8). The `../` is
 				// load-bearing: this path resolves relative to deploy/, whose node_modules
 				// holds ONLY sst — the assets live in the ROOT node_modules.
-				// (Shifts to ../api/node_modules/... at the v0.9.0 move.)
-				{ from: '../node_modules/@fastify/swagger-ui/static', to: 'static' },
+				// (Shifted to ../api/node_modules/... at the v0.9.0 move, as planned.)
+				{ from: '../api/node_modules/@fastify/swagger-ui/static', to: 'static' },
 			],
 		});
 

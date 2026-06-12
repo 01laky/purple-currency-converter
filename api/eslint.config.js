@@ -16,12 +16,4 @@ export default tseslint.config(
 			'@typescript-eslint/consistent-type-assertions': ['error', { assertionStyle: 'never' }],
 		},
 	},
-	{
-		files: ['deploy/sst.config.ts'],
-		rules: {
-			// SST v4 REQUIRES the triple-slash reference to its generated config.d.ts —
-			// without it the $config/$app/sst globals have no types
-			'@typescript-eslint/triple-slash-reference': 'off',
-		},
-	},
 );

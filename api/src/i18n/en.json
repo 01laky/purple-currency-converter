@@ -23,6 +23,7 @@
 		"result": "Result",
 		"numberOfCalculations": "Number of calculations made",
 		"topTargetCurrency": "Top target currency",
-		"totalAmountEur": "Total amount in EUR"
+		"totalAmountEur": "Total amount in EUR",
+		"retry": "Try again"
 	}
 }

@@ -32,7 +32,7 @@ const ensureEnvFile = (): void => {
  * @throws {Error} when docker compose fails (e.g. Docker is not running)
  */
 const startDynamo = (): void => {
-	execSync('docker compose up -d', { stdio: 'inherit' });
+	execSync('docker compose -f ../docker-compose.yml up -d', { stdio: 'inherit' });
 };
 
 /**

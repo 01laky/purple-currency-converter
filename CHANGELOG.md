@@ -4,6 +4,16 @@ All notable changes to this project are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html). Every entry carries the datetime the version was closed — together with the AI_DIARY.md datetimes it is the source of the submission time budget (rule 14).
 
+## [0.4.0] — 2026-06-12 11:03
+
+### Added
+
+- **`GET /api/currencies`** — currency codes mapped to display names for the conversion selects; the response is the **intersection** of the OER currency names and the cached rates (only currencies that have a rate are listed — the list and the rates never diverge), keys sorted; `Cache-Control: public, max-age=3600`.
+- **The names source** — `fetchCurrencyNames` through the single OER fetch pattern (the shared injectable fetch, timeout and Zod parsing); cached by the generic `createCachedSource<T>` with a 1-hour TTL and an independent stale fallback.
+- **`RATE_PROVIDER_ERROR` (502)** — the error-model piece deferred from v0.3.0: an unreachable provider (no stale copy) is mapped by the central error handler to 502 in the unified shape; the `errors.rateProvider` translation existed since v0.2.0, so the catalog needed zero changes; covered by a catalog API test that triggers the 502 over HTTP.
+- **The `buildApp` DI seam** — an optional `ratesProvider` override for route tests (rule 1 — the tests never touch the real OER client); `server.ts` unchanged.
+- **Tests** — 9 new (51 total): the intersection semantics (both drop directions), the sorted keys, the stale-names fallback, the names-unavailable 502 path, the `/currencies.json` parsing branches, the endpoint happy path with the cache header and the 502 catalog test.
+
 ## [0.3.0] — 2026-06-12 05:58
 
 ### Added
@@ -57,6 +67,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 - **AI collaboration diary (`AI_DIARY.md`)** — created on day one, with the record template in the file header.
 - **Repo hygiene (`.gitignore`)** — secrets (`.env*` except `.env.example`), local AI permissions (`.claude/settings.local.json`), dependencies and build outputs.
 
+[0.4.0]: https://github.com/01laky/purple-currency-converter/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/01laky/purple-currency-converter/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/01laky/purple-currency-converter/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/01laky/purple-currency-converter/compare/v0.0.0...v0.1.0

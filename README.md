@@ -1,27 +1,56 @@
 # Purple currency converter
 
-![Version](https://img.shields.io/badge/version-0.11.0-blue)
+![Version](https://img.shields.io/badge/version-1.0.0-blue)
 ![Node](https://img.shields.io/badge/node-%E2%89%A522-339933?logo=node.js&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white)
 [![CI](https://github.com/01laky/purple-currency-converter/actions/workflows/ci.yml/badge.svg)](https://github.com/01laky/purple-currency-converter/actions/workflows/ci.yml)
 
 A currency conversion REST API with live exchange rates, an in-memory rates cache, persistent conversion statistics and infrastructure as code — a Purple LAB case study built in a tightly governed AI collaboration (see [AI collaboration](#ai-collaboration)).
 
+## Future vision
+
+_If AI writes the code, what does a great engineer actually do?_
+
+When AI writes code, a great engineer can finally design the architecture they've always dreamed of, instead of spending 95% of their time writing code.
+
 ## How it works
 
-```
-                  ┌────────────────────────────────────────────┐
- local: server.ts─┤  src/app.ts — Fastify app (all the logic)  │
- AWS:  lambda.ts ─┤                                            │
- (Function URL)   │  • /health          • /api/init            │
-                  │  • /api/convert     • /api/currencies      │
-                  │  • /api/stats       • /docs (Swagger UI)   │
-                  └─────────────────────┬──────────────────────┘
-                            ┌───────────┴───────────┐
-                            ▼                       ▼
-                  rates: in-memory cache     statistics: DynamoDB
-                  (TTL 10 min + stale        (atomic counters via
-                  fallback) → OER            TransactWriteItems)
+```mermaid
+flowchart TB
+    server["🖥 server.ts<br/><i>local adapter — :3000</i>"]
+    lambda["☁️ lambda.ts<br/><i>AWS adapter — Lambda Function URL</i>"]
+
+    subgraph app["api/src/app.ts — the pure Fastify app (all the logic)"]
+        direction LR
+        convert["POST /api/convert"]
+        currencies["GET /api/currencies"]
+        stats["GET /api/stats"]
+        init["GET /api/init"]
+        health["GET /health · /docs"]
+    end
+
+    cache["⚡ in-memory rates cache<br/><i>TTL 10 min + stale fallback</i>"]
+    oer["🌐 openexchangerates.org<br/><i>USD base → cross-rate</i>"]
+    dynamo[("🗄 DynamoDB<br/><i>atomic counters — TransactWriteItems</i>")]
+
+    server --> app
+    lambda --> app
+    convert --> cache
+    currencies --> cache
+    cache -. "on miss / expiry" .-> oer
+    convert --> dynamo
+    stats --> dynamo
+
+    classDef brand fill:#522473,stroke:#3a1a52,color:#ffffff
+    classDef inner fill:#ffffff,stroke:#cccccc,color:#141414
+    classDef store fill:#eaecef,stroke:#522473,color:#141414
+    classDef extern fill:#ffffff,stroke:#522473,color:#141414,stroke-dasharray:5 5
+
+    class app brand
+    class convert,currencies,stats,init,health inner
+    class server,lambda store
+    class cache,dynamo store
+    class oer extern
 ```
 
 Design notes and conscious trade-offs:
@@ -75,7 +104,7 @@ All texts of the system (EN/CS/SK) in one response: `{ "languages": ["en", "cs",
 ### `GET /health`
 
 ```jsonc
-{ "ok": true, "version": "0.11.0", "uptime": 1234, "ratesCacheAge": 120 }
+{ "ok": true, "version": "1.0.0", "uptime": 1234, "ratesCacheAge": 120 }
 ```
 
 Instance diagnostics — the version, the process uptime and the age of the rates cache (`null` before the first fetch).
@@ -151,7 +180,7 @@ The frontend has its own [`web/.env.example`](web/.env.example): `VITE_API_URL` 
 
 ## Project Status
 
-**v0.11.0 — Level 2 complete and hardened; what remains is the submission finalization (v1.0.0).**
+**v1.0.0 — the submission is complete: Level 1 + Level 2 + both bonuses (deploy, IaC), live in production.**
 
 | Version      | Content                                             | Status |
 | ------------ | --------------------------------------------------- | ------ |
@@ -167,7 +196,7 @@ The frontend has its own [`web/.env.example`](web/.env.example): `VITE_API_URL` 
 | 0.9.0        | the frontend base — the monorepo, the Figma tokens, the generated client, the converter | ✅ |
 | 0.10.0       | the frontend completion + the same-origin deploy (Level 2) | ✅ |
 | 0.11.0       | hardening (the rate limit, the adversarial pass, the documentation sync) | ✅ |
-| 1.0.0        | the submission (the future vision, the time budget) | ⏳     |
+| 1.0.0        | the submission (the future vision, the time budget) | ✅     |
 
 ## Tech Stack
 
@@ -175,8 +204,21 @@ TypeScript (strict — no `any`, no type assertions) · Fastify 5 + Zod 4 (`fast
 
 ## AI collaboration
 
-This project is also an experiment in governed AI collaboration: every version starts as a reviewed prompt (`prompt/`), the AI implements against 29 committed working rules ([CLAUDE.md](CLAUDE.md)) with machine-enforced guardrails (`.claude/settings.json` — the AI cannot push, deploy or read secrets), and every meaningful moment — including failures and corrections in both directions — is recorded as it happens in **[AI_DIARY.md](AI_DIARY.md)**. The future-vision reflection arrives with v1.0.0.
+This project is also an experiment in governed AI collaboration: every version starts as a reviewed prompt (`prompt/`), the AI implements against 29 committed working rules ([CLAUDE.md](CLAUDE.md)) with machine-enforced guardrails (`.claude/settings.json` — the AI cannot push, deploy or read secrets), and every meaningful moment — including failures and corrections in both directions — is recorded as it happens in **[AI_DIARY.md](AI_DIARY.md)**.
 
-## Author & License
+### Time budget
 
-**Ladislav Kostolný** · No license granted yet — all rights reserved (to be revisited at v1.0.0 before the submission).
+Summed from the datetimed CHANGELOG.md and AI_DIARY.md records collected since day one (rules 14/26 — no retroactive reconstruction; a gap over 60 minutes splits work blocks), plus the proposal writing that preceded the first recorded session:
+
+| Work block                | Range               | Duration       | Covers                            |
+| ------------------------- | ------------------- | -------------- | --------------------------------- |
+| The proposal              | before the records  | 3 h 00 min     | docs/proposal.md — the design and the roadmap |
+| Session 1                 | 04:15 – 05:58       | 1 h 43 min     | v0.0.0 → v0.3.0                   |
+| Session 2                 | around 11:03        | 1 h 10 min     | v0.4.0                            |
+| Session 3                 | 12:10 – 17:02       | 4 h 52 min     | v0.5.0 → v0.11.0                  |
+| Session 4                 | 17:15 – 17:30       | 0 h 15 min     | v1.0.0 — the submission           |
+| **Total**                 |                     | **≈ 11 h 00 min** |                                |
+
+## Author
+
+**Ladislav Kostolný**

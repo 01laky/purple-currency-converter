@@ -4,6 +4,20 @@ All notable changes to this project are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html). Every entry carries the datetime the version was closed — together with the AI_DIARY.md datetimes it is the source of the submission time budget (rule 14).
 
+## [1.0.0] — 2026-06-12 17:30
+
+**The submission: the future vision, the time budget, the final polish. No functional change.**
+
+### Added
+
+- **The Future vision section** at the top of the README — the assignment's reflection question answered in the human's own recorded words (the §12 text drafted at v0.0.0): when the AI writes the code, the great engineer finally gets to design the architecture they always dreamed of instead of spending 95 % of their time typing code — deciding WHAT to build and verifying that it is right; this repository's AI setup as the practical demonstration.
+- **The time budget** in the README AI collaboration section — ≈ 11 hours, summed from the datetimed changelog/diary records collected since day one (rules 14/26; a gap over 60 minutes splits work blocks) plus the proposal writing that preceded the first recorded session; the block table is published with the total.
+
+### Changed
+
+- **The license decision resolved** (deferred at v0.8.0, the human's call): all rights reserved, no license granted — the Author & License section states it explicitly; the repository is published for the case-study evaluation.
+- **The version artifacts to 1.0.0** — the badge, the Project Status (every roadmap row ✅), the `/health` example; the contract re-export after the bump changed the version line only, the regenerated client follows.
+
 ## [0.11.0] — 2026-06-12 17:00
 
 **Hardening: the §9 rate limit, the adversarial pass, the documentation sync.**
@@ -168,6 +182,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 - **AI collaboration diary (`AI_DIARY.md`)** — created on day one, with the record template in the file header.
 - **Repo hygiene (`.gitignore`)** — secrets (`.env*` except `.env.example`), local AI permissions (`.claude/settings.local.json`), dependencies and build outputs.
 
+[1.0.0]: https://github.com/01laky/purple-currency-converter/compare/v0.11.0...v1.0.0
 [0.11.0]: https://github.com/01laky/purple-currency-converter/compare/v0.10.0...v0.11.0
 [0.10.0]: https://github.com/01laky/purple-currency-converter/compare/v0.9.0...v0.10.0
 [0.9.0]: https://github.com/01laky/purple-currency-converter/compare/v0.8.0...v0.9.0

@@ -314,7 +314,7 @@ Figma "Purple case" → the Main page contains the Web and Mobile variant of the
 - **The remaining two statistics from the assignment** (the top target currency, the total amount in EUR — the design shows only the count): additional rows of the same Result card in the identical "label + value" style. The smallest possible intervention, no new components.
 - **The open state of the selects:** with ~170 currencies it behaves as a filterable list (specification below); the closed state is pixel-perfect per Figma.
 - **Loading/error states:** derived from the design system — a spinner in the button, errors next to the fields, a banner.
-- **A language changer:** an EN/CS/SK switch (the texts arrive multilingual from `/api/init`); a discreet placement in the page corner, the visual derived from the design system.
+- **A language changer:** an EN/CS/SK switch (the texts arrive multilingual from `/api/init`); **centered ABOVE the title with its own spacing, on both breakpoints** (revised at 0.10.0 — the original corner placement collided with the title on mobile), the visual derived from the design system.
 
 ### Layout and behavior
 
@@ -325,7 +325,7 @@ Figma "Purple case" → the Main page contains the Web and Mobile variant of the
 - **App boot:** a full-page spinner until `GET /api/init` (the texts) and `GET /api/currencies` (the currencies) complete — without them the app does not render. An init failure → the fallback message (§3); a currencies failure → an error state with a retry option.
 - **States during use:** loading = the disabled Convert button with an inline spinner (no skeletons — the design does not need them); errors mapped onto the error model (`VALIDATION_ERROR` at the field, `UNSUPPORTED_CURRENCY` at the select, `RATE_PROVIDER_ERROR` as a banner); the statistics empty state at 0 conversions. Stale rates are not shown in the UI (the design has no such element) — `rateTimestamp` stays only in the API response.
 - **No layout shift:** the space for the result and the statistics is reserved (CLS ≈ 0).
-- **Input UX:** autofocus on amount, Enter submits, Convert is disabled with an invalid form and during the request (double-submit prevention — a complement of the "the frontend never retries a POST" rule, §6).
+- **Input UX:** autofocus on amount, Enter submits, Convert is disabled with an invalid form and during the request (double-submit prevention — a complement of the "the frontend never retries a POST" rule, §6). **Defaults (revised at 0.10.0):** the amount pre-fills with `0`, From with `EUR`, To with `CZK` unless the user chooses otherwise; the pristine `0` is NOT submittable (the contract requires a positive amount — Convert stays disabled until a positive value) and is fully selected on focus so the first keystroke replaces it.
 - **The currency selects — a binding specification:** typing filters the list, the ↑/↓ arrows navigate, Enter selects, Esc closes, an outside click closes; fully operable by mouse and keyboard; the value = the code + the currency name. **The same currency cannot be chosen on both sides** — the target select excludes the chosen source currency (and vice versa); the backend validates it anyway (§3) — defense in depth.
 - **The statistics** load at boot and refresh after every successful conversion — the user sees the persistence live.
 - **Accessibility baseline:** semantic HTML (form/label/button), `aria-live` on the result and the error messages, visible focus, contrast per Figma, correct ARIA roles of the selects.

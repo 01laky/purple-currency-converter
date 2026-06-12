@@ -442,7 +442,7 @@ Milestones: **0.8.0 = a submittable Level 1** (if time ran out, this is where to
 
 ## 15. Out of scope (consciously)
 
-Multi-region, CD (automatic deploys from CI), API Gateway throttling/WAF — the README mentions them as "next steps", they are not implemented. Authentication is not a "next step" — it will not exist at all (§9). Rate limiting IS in scope (§9, the hardening version). CI (typecheck + lint + tests on push/PR) IS in scope from v0.2.0.
+Multi-region, CD (automatic deploys from CI), API Gateway throttling/WAF — the README mentions them as "next steps", they are not implemented. Authentication is not a "next step" — it will not exist at all (§9). Rate limiting IS in scope (§9, the hardening version). CI (typecheck + lint + tests on push/PR) IS in scope from v0.1.0.
 
 ## Backlog
 

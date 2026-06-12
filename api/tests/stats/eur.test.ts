@@ -55,4 +55,20 @@ describe('toEurCents', () => {
 
 		expect(await toEurCents(100, 'GBP', provider)).toBe(8612);
 	});
+
+	// additive at v0.11.0 (the edge-case pass): the honest-zero decision propagates into the
+	// statistics — a conversion too small to represent in EUR cents records 0, never a fraction
+	it('a tiny cross conversion records the honest 0 cents', async () => {
+		// 0.01 × 0.0001 = 0.000001 → roundMoney → 0 → 0 cents
+		const { provider } = createProviderStub(0.0001);
+
+		expect(await toEurCents(0.01, 'JPY', provider)).toBe(0);
+	});
+
+	it('the smallest valid amount (0.01 EUR) records exactly 1 cent — the float 1.0000…02 absorbed', async () => {
+		const { provider, getRate } = createProviderStub(999);
+
+		expect(await toEurCents(0.01, 'EUR', provider)).toBe(1);
+		expect(getRate).not.toHaveBeenCalled();
+	});
 });

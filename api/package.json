@@ -1,6 +1,6 @@
 {
 	"name": "purple-currency-converter",
-	"version": "0.10.0",
+	"version": "0.11.0",
 	"private": true,
 	"description": "Currency conversion API with live exchange rates — Purple LAB case study",
 	"type": "module",
@@ -24,6 +24,7 @@
 		"@fastify/aws-lambda": "^6.4.0",
 		"@fastify/cors": "^11.2.0",
 		"@fastify/helmet": "^13.0.2",
+		"@fastify/rate-limit": "^11.0.0",
 		"@fastify/swagger": "^9.7.0",
 		"@fastify/swagger-ui": "^6.0.0",
 		"fastify": "^5.8.5",

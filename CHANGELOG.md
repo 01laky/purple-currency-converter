@@ -4,6 +4,28 @@ All notable changes to this project are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html). Every entry carries the datetime the version was closed — together with the AI_DIARY.md datetimes it is the source of the submission time budget (rule 14).
 
+## [0.11.0] — 2026-06-12 17:00
+
+**Hardening: the §9 rate limit, the adversarial pass, the documentation sync.**
+
+### Added
+
+- **The rate limit on `POST /api/convert`** — 60 requests per minute per client IP via `@fastify/rate-limit`, scoped to the one WRITING endpoint (`global: false`, the per-route `config.rateLimit`); the 429 answers in the unified error shape (`RATE_LIMITED` + `errors.rateLimited` — the last unused catalog key comes alive, the §3 catalog closes at 100 % utilization) through a dedicated `RateLimitExceededError` and the central handler, declared in the OpenAPI contract. The keying: `trustProxy: 1` resolves `request.ip` to the viewer IP CloudFront appends — a client-forged `x-forwarded-for` prefix is ignored (the review pinned the hop count 2; the forged-prefix TEST corrected the off-by-one — the socket counts as hop 0). The limiter counts in `onRequest`, BEFORE validation — invalid requests trip it with zero statistics writes. The README documents the honest scope: per-instance counting (N×60 with N instances, the concurrency cap of 10 as the backstop), abuse damping rather than a security boundary.
+- **The DI-injectable rate-limit max** (`BuildAppDeps.rateLimitMax`) — the 429 tests run four requests on their own app instance instead of sixty-one against the shared suite window (the human's review finding: the in-memory store makes the limiter's own test its adversary).
+- **The frontend 429 handling — zero code** — the two-level error mapping already routes `RATE_LIMITED` to the banner and the catalog has carried the text since v0.2.0; an additive test proves it.
+- **The observable stale fallback** (the adversarial pass) — `createCachedSource` gains an `onStaleServed` observer and the provider warns through the injected app logger: an OER outage is now visible in the logs while the cache still answers, instead of surfacing only when it dies into the 502 (rule 24 — the absorbed failure was the one silent catch in the system).
+- **The supported-list race closed** (the adversarial pass) — an `UnknownRateCurrencyError` escaping between the supported-currencies check and the rate lookup (a TTL refetch can shrink the set mid-request) now maps to the same 422 `UNSUPPORTED_CURRENCY` instead of a 500; §3's "an external failure never ends as a 500" holds on every path.
+- **The edge-case test deliverable** — the exact amount boundaries (`MAX_AMOUNT` inclusive, the first value above it, 0, the 2-vs-3-decimals line), the half-open `[0, ttl)` cache window, the honest-0-cents statistics write, the per-IP keying, the forged-prefix rejection, the before-validation counting; on the web the untested non-unified mutator fallback (a gateway HTML page, a transportless timeout → `NETWORK_ERROR`/`errors.network`) and the `errorPlacement` default branches. Tests: api 119 (+16), web 46 (+5).
+
+### Changed
+
+- **`docs/AI_SETUP.md` synced to reality** — §3 now shows the CURRENT committed `settings.json` (the exit-2 multi-workspace typecheck hook that replaced the original dead `|| true` loop, the monorepo deny additions) and §8 the real repo tree; the document no longer presents the v0.0.0 draft as the present.
+- **The proposal gains the `## 15. Backlog` section** (rule 25 referenced it; now it exists) — the per-conversion event log (from v0.6.0) and the result-magnitude precision limit found by the adversarial pass (the input is bounded by 1e12, the result is not — cents beyond 2^53 lose precision at absurd magnitudes; documented, not fixed: a fix means a contract change).
+
+### Fixed
+
+- **A stale JSDoc in `web/src/api/mutator.ts`** claimed the synthetic NETWORK_ERROR carries `errors.internal` — it has carried `errors.network` since v0.10.0.
+
 ## [0.10.0] — 2026-06-12 16:15
 
 **Level 2 functionally complete: the frontend completion and the same-origin production.**
@@ -146,6 +168,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 - **AI collaboration diary (`AI_DIARY.md`)** — created on day one, with the record template in the file header.
 - **Repo hygiene (`.gitignore`)** — secrets (`.env*` except `.env.example`), local AI permissions (`.claude/settings.local.json`), dependencies and build outputs.
 
+[0.11.0]: https://github.com/01laky/purple-currency-converter/compare/v0.10.0...v0.11.0
 [0.10.0]: https://github.com/01laky/purple-currency-converter/compare/v0.9.0...v0.10.0
 [0.9.0]: https://github.com/01laky/purple-currency-converter/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/01laky/purple-currency-converter/compare/v0.7.0...v0.8.0

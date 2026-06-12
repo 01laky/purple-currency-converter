@@ -47,6 +47,48 @@ describe('createCachedSource', () => {
 		expect(fetchFn).toHaveBeenCalledTimes(1);
 	});
 
+	// additive at v0.11.0 (the edge-case pass): the freshness window is [0, ttl) — the strict <
+	// in the implementation makes the EXACT boundary already stale; this test pins the contract
+	// additive at v0.11.0 (the adversarial pass): the stale fallback is by design, but it must
+	// never be SILENT (rule 24) — the absorbed refresh failure reaches the observer every time
+	it('notifies onStaleServed with the refresh error when the stale copy is served', async () => {
+		let time = 0;
+		const refreshError = new Error('upstream down');
+		const fetchFn = vi
+			.fn<() => Promise<string>>()
+			.mockResolvedValueOnce('fresh')
+			.mockRejectedValue(refreshError);
+		const onStaleServed = vi.fn();
+		const source = createCachedSource<string>({
+			fetchFn,
+			ttlMs: TTL_MS,
+			now: () => time,
+			onStaleServed,
+		});
+
+		await source.get();
+		expect(onStaleServed).not.toHaveBeenCalled();
+		time += TTL_MS;
+		const result = await source.get();
+
+		expect(result).toEqual({ value: 'fresh', fetchedAt: 0, stale: true });
+		expect(onStaleServed).toHaveBeenCalledTimes(1);
+		expect(onStaleServed).toHaveBeenCalledWith(refreshError);
+	});
+
+	it('refetches at EXACTLY the TTL boundary — the window is half-open', async () => {
+		let counter = 0;
+		const { source, fetchFn, tick } = createHarness(async () => `value-${String(counter++)}`);
+
+		await source.get();
+		tick(TTL_MS - 1);
+		await source.get();
+		expect(fetchFn).toHaveBeenCalledTimes(1);
+		tick(1);
+		await source.get();
+		expect(fetchFn).toHaveBeenCalledTimes(2);
+	});
+
 	it('refetches after the TTL expires', async () => {
 		let counter = 0;
 		const { source, fetchFn, tick } = createHarness(async () => `value-${String(counter++)}`);

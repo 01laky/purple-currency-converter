@@ -39,7 +39,8 @@ const isApiErrorBody = (payload: unknown): payload is ApiErrorBody => {
  * @description Maps any transport failure onto the typed ApiError (proposal §10): a response
  * carrying the §3 unified body keeps its code/key/params; everything else (a timeout, a
  * network failure, an unexpected payload) becomes the synthetic NETWORK_ERROR with the
- * errors.internal key — translated like every other text, no raw axios internals.
+ * errors.network key (the catalog key added at v0.10.0) — translated like every other text,
+ * no raw axios internals.
  *
  * @param {unknown} error the caught error
  *

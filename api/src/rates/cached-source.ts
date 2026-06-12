@@ -15,7 +15,7 @@ import type { CachedSource, CachedSourceOptions, CachedValue } from './types.js'
  * @returns {CachedSource<T>} the cached source with get() and ageSeconds()
  */
 export const createCachedSource = <T>(options: CachedSourceOptions<T>): CachedSource<T> => {
-	const { fetchFn, ttlMs, now } = options;
+	const { fetchFn, ttlMs, now, onStaleServed } = options;
 	let cached: { value: T; fetchedAt: number } | undefined;
 	let inFlight: Promise<CachedValue<T>> | undefined;
 
@@ -36,7 +36,9 @@ export const createCachedSource = <T>(options: CachedSourceOptions<T>): CachedSo
 			return { ...cached, stale: false };
 		} catch (error) {
 			if (cached !== undefined) {
-				// the stale fallback (§4): the last good copy, honestly with its original fetchedAt
+				// the stale fallback (§4): the last good copy, honestly with its original fetchedAt —
+				// and NEVER silently (rule 24, v0.11.0): the absorbed failure goes to the observer
+				onStaleServed?.(error);
 				return { ...cached, stale: true };
 			}
 			throw error;

@@ -67,7 +67,7 @@ Principles of writing `CLAUDE.md`: short (the AI reads it every session — ball
 
 ## 3. `.claude/settings.json` — permissions and hooks
 
-Committed into the repo (it applies to anyone who opens the repo). Two roles: **safe guardrails** and **an automatic feedback loop**.
+Committed into the repo (it applies to anyone who opens the repo). Two roles: **safe guardrails** and **an automatic feedback loop**. The configuration below is the CURRENT committed state (synced at v0.11.0) — the original draft had a dead feedback loop: the hook ended with `|| true`, which swallowed the exit code so the typecheck result never reached the AI; the v0.0.0 setup audit found and replaced it (the story is in AI_DIARY.md), and the deny list grew with the monorepo (nested `.env` files, `npm run deploy`).
 
 ```json
 {
@@ -75,9 +75,17 @@ Committed into the repo (it applies to anyone who opens the repo). Two roles: **
 		"allow": [
 			"Bash(npm run dev)",
 			"Bash(npm test:*)",
+			"Bash(npm run test:*)",
+			"Bash(npm run verify:*)",
+			"Bash(npm run lint:*)",
 			"Bash(npm run db:init)",
+			"Bash(npm run setup)",
 			"Bash(npx tsc --noEmit)",
 			"Bash(npx vitest:*)",
+			"Bash(cd api && npm run verify:api)",
+			"Bash(cd web && npm run verify:web)",
+			"Bash(cd api && npx tsc --noEmit)",
+			"Bash(cd web && npx tsc --noEmit)",
 			"Bash(docker compose up:*)",
 			"Bash(docker compose ps:*)",
 			"Bash(git status)",
@@ -87,8 +95,12 @@ Committed into the repo (it applies to anyone who opens the repo). Two roles: **
 		"deny": [
 			"Read(.env)",
 			"Read(.env.*)",
+			"Read(**/.env)",
+			"Read(**/.env.*)",
 			"Bash(npx sst deploy:*)",
 			"Bash(npx sst remove:*)",
+			"Bash(npm run deploy)",
+			"Bash(npm run deploy:*)",
 			"Bash(git push:*)"
 		]
 	},
@@ -99,7 +111,7 @@ Committed into the repo (it applies to anyone who opens the repo). Two roles: **
 				"hooks": [
 					{
 						"type": "command",
-						"command": "cd \"$CLAUDE_PROJECT_DIR\" && npx tsc --noEmit 2>&1 | head -20 || true"
+						"command": "cd \"$CLAUDE_PROJECT_DIR\" && status=0; for d in . api web; do if [ -f \"$d/tsconfig.json\" ]; then errs=$(cd \"$d\" && npx tsc --noEmit 2>&1 | head -20); if [ -n \"$errs\" ]; then echo \"[$d] typecheck:\" >&2; echo \"$errs\" >&2; status=2; fi; fi; done; exit $status"
 					}
 				]
 			}
@@ -111,9 +123,9 @@ Committed into the repo (it applies to anyone who opens the repo). Two roles: **
 What it does and why:
 
 - **`allow`** — routine read-only and test commands run without confirmation → fast iteration, the AI can verify itself
-- **`deny` on `.env`** — the AI never sees the API keys and the AWS credentials. This is hygiene the evaluators will appreciate: a prompt containing secrets is a leaked prompt
+- **`deny` on `.env`** — the AI never sees the API keys and the AWS credentials (including the NESTED `api/.env` and `web/.env` of the monorepo). This is hygiene the evaluators will appreciate: a prompt containing secrets is a leaked prompt
 - **`deny` on deploy/push** — irreversible actions stay in human hands; the AI proposes them, I execute them
-- **The PostToolUse hook** — after every file edit the typecheck runs automatically and the result returns to the AI as feedback. The AI thus **sees its own mistakes immediately**, not only when I run a build. This is the exact meaning of the "feedback loop": the system catches the errors, not the human.
+- **The PostToolUse hook** — after every file edit the typecheck runs over every workspace (the root, `api/`, `web/`) and a non-empty result EXITS 2, which surfaces the errors back to the AI as blocking feedback. The AI thus **sees its own mistakes immediately**, not only when I run a build. This is the exact meaning of the "feedback loop": the system catches the errors, not the human — and the exit code is what makes it real (the audited-away `|| true` made the loop decorative).
 
 ---
 
@@ -215,15 +227,15 @@ CHANGELOG.md                    # Keep a Changelog, datetimed entries = the time
 README.md                       # badges, the future vision (v1.0.0), the API reference, the quick start, the documentation table
 docs/
 ├── AI_SETUP.md                 # this document
-└── proposal.md                 # the binding design + the roadmap 0.0.0 → 1.0.0
+├── proposal.md                 # the binding design + the roadmap 0.0.0 → 1.0.0
+└── figma/                      # the committed design export + reference snapshots (the source of the SCSS tokens)
 prompt/
 ├── TEMPLATE.md                 # the version prompt template
 └── vX.Y.Z.md                   # the prompt of every version (one per version, 0.0.0 → current)
 api/                            # the Fastify application + tests + openapi.json (the contract source)
 web/                            # the React frontend + tests (the client generated from openapi.json)
 deploy/                         # the SST infrastructure (Lambda, DynamoDB, Router, StaticSite)
-figma/                          # the committed design export (the source of the SCSS tokens)
-.github/workflows/ci.yml        # typecheck + lint + tests + the OpenAPI drift guard
+.github/workflows/ci.yml        # typecheck + lint + tests + the OpenAPI drift guards (api + web)
 ```
 
 The introduction order: `git init` → commit the spec documents + `CLAUDE.md` + `.claude/` (commit #1, no code yet) → create `AI_DIARY.md` (commit #2) → only then the first code. The evaluator thus sees in the history: **first the thinking and the process setup, then the implementation** — exactly what the assignment rewards.

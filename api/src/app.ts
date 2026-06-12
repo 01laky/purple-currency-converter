@@ -1,6 +1,7 @@
 import { createHash, randomUUID } from 'node:crypto';
 import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
+import rateLimit from '@fastify/rate-limit';
 import swagger from '@fastify/swagger';
 import swaggerUi from '@fastify/swagger-ui';
 import fastify from 'fastify';
@@ -22,11 +23,15 @@ import {
 	CURRENCIES_CACHE_CONTROL,
 	DEFAULT_FRONTEND_ORIGIN,
 	NO_STORE_CACHE_CONTROL,
+	RATE_LIMIT_MAX,
+	RATE_LIMIT_WINDOW,
+	TRUST_PROXY_HOPS,
 } from './lib/constants.js';
 import { EnvVar, ErrorCode, ErrorKey } from './lib/enums.js';
+import { RateLimitExceededError } from './lib/errors.js';
 import { resolveSwaggerStaticDir } from './lib/swagger.js';
 import type { ApiErrorBody, BuildAppDeps, ErrorParams } from './lib/types.js';
-import { RateProviderUnavailableError } from './rates/errors.js';
+import { RateProviderUnavailableError, UnknownRateCurrencyError } from './rates/errors.js';
 import { createRatesProvider } from './rates/provider.js';
 import type { RatesProvider } from './rates/types.js';
 import { toEurCents } from './stats/eur.js';
@@ -94,6 +99,18 @@ const buildErrorBody = (code: ErrorCode, key: ErrorKey, params?: ErrorParams): A
 };
 
 /**
+ * @name buildRateLimitErrorResponse
+ *
+ * @description errorResponseBuilder of @fastify/rate-limit (proposal §9). The plugin THROWS
+ * the builder's return value, so the builder returns a recognizable Error — the central
+ * handler maps it onto the unified 429 body (the plugin's default { statusCode, error,
+ * message } shape never reaches the client).
+ *
+ * @returns {RateLimitExceededError} the error the central handler maps to the 429
+ */
+const buildRateLimitErrorResponse = (): RateLimitExceededError => new RateLimitExceededError();
+
+/**
  * @name setRequestIdHeader
  *
  * @description onRequest hook — mirrors the generated request id into the X-Request-Id response
@@ -153,7 +170,9 @@ const notFoundHandler = async (_request: FastifyRequest, reply: FastifyReply): P
  * @name errorHandler
  *
  * @description The central error handler (proposal §3). Normalizes every error into the unified
- * shape: an unsupported currency becomes 422 UNSUPPORTED_CURRENCY with params.code; an
+ * shape: an unsupported currency becomes 422 UNSUPPORTED_CURRENCY with params.code (an
+ * UnknownRateCurrencyError escaping the supported-list race maps to the SAME 422 — defense in
+ * depth, v0.11.0); an exceeded rate limit becomes 429 RATE_LIMITED (§9); an
  * unreachable rate provider (no stale copy) becomes 502 RATE_PROVIDER_ERROR; a Zod schema
  * failure (detected via hasZodFastifySchemaValidationErrors) becomes 400 VALIDATION_ERROR with
  * the key taken from error.validation[0].message — the schema message IS the i18n key (§3);
@@ -181,10 +200,25 @@ const errorHandler = async (
 		);
 		return;
 	}
+	if (error instanceof UnknownRateCurrencyError) {
+		// defense in depth (v0.11.0 adversarial pass): between the supported-list check and the
+		// rate lookup the cache may refetch and a currency can vanish — §3 forbids an external
+		// data change to surface as a 500, so the escape maps to the same 422 as the validation
+		await reply.status(422).send(
+			buildErrorBody(ErrorCode.UNSUPPORTED_CURRENCY, ErrorKey.UNSUPPORTED_CURRENCY, {
+				code: error.code,
+			}),
+		);
+		return;
+	}
 	if (error instanceof RateProviderUnavailableError) {
 		await reply
 			.status(502)
 			.send(buildErrorBody(ErrorCode.RATE_PROVIDER_ERROR, ErrorKey.RATE_PROVIDER));
+		return;
+	}
+	if (error instanceof RateLimitExceededError) {
+		await reply.status(429).send(buildErrorBody(ErrorCode.RATE_LIMITED, ErrorKey.RATE_LIMITED));
 		return;
 	}
 	if (hasZodFastifySchemaValidationErrors(error)) {
@@ -350,6 +384,9 @@ export const buildApp = async (deps?: BuildAppDeps): Promise<FastifyInstance> =>
 		logger: nodeEnv === 'test' ? false : { level: nodeEnv === 'production' ? 'info' : 'debug' },
 		disableRequestLogging: true,
 		genReqId: () => randomUUID(),
+		// §9: request.ip = the viewer IP CloudFront appended (the rightmost x-forwarded-for
+		// entry) — NOT `true`, which would trust the client-forged leftmost entry
+		trustProxy: TRUST_PROXY_HOPS,
 	});
 
 	app.setValidatorCompiler(validatorCompiler);
@@ -357,6 +394,10 @@ export const buildApp = async (deps?: BuildAppDeps): Promise<FastifyInstance> =>
 
 	// CSP would block Swagger UI's inline scripts and styles at /docs
 	await app.register(helmet, { contentSecurityPolicy: false });
+
+	// §9: the limiter guards POST /api/convert ONLY (the one writing endpoint) — enabled
+	// per route through config.rateLimit, never globally; counts in onRequest, before validation
+	await app.register(rateLimit, { global: false, errorResponseBuilder: buildRateLimitErrorResponse });
 
 	// CORS for the LOCAL web dev only (§10): web:5173 → api:3000 is cross-origin; production
 	// is same-origin through the Router (0.10.0) — no CORS exists there. Exact origin, never *.
@@ -387,7 +428,8 @@ export const buildApp = async (deps?: BuildAppDeps): Promise<FastifyInstance> =>
 	app.setNotFoundHandler(notFoundHandler);
 	app.setErrorHandler(errorHandler);
 
-	const ratesProvider = deps?.ratesProvider ?? createRatesProvider();
+	// the app logger (not request-scoped — the cache outlives requests) observes stale serves
+	const ratesProvider = deps?.ratesProvider ?? createRatesProvider({ logger: app.log });
 	const statsRepository = deps?.statsRepository ?? createStatsRepository();
 
 	const typed = app.withTypeProvider<ZodTypeProvider>();
@@ -431,6 +473,14 @@ export const buildApp = async (deps?: BuildAppDeps): Promise<FastifyInstance> =>
 	typed.post(
 		'/api/convert',
 		{
+			// §9: the per-route rate limit — counted in onRequest (before validation), keyed by
+			// request.ip; per Lambda instance, the README documents the trade-off
+			config: {
+				rateLimit: {
+					max: deps?.rateLimitMax ?? RATE_LIMIT_MAX,
+					timeWindow: RATE_LIMIT_WINDOW,
+				},
+			},
 			schema: {
 				summary: 'Convert an amount between two currencies',
 				description:
@@ -439,13 +489,15 @@ export const buildApp = async (deps?: BuildAppDeps): Promise<FastifyInstance> =>
 					'places). rateTimestamp is the time the rates were fetched from the provider, NOT ' +
 					'the moment of the conversion — under the stale fallback it honestly carries the ' +
 					'older time. Currency codes are case-insensitive and normalized to uppercase; the ' +
-					'supported set is the same the /api/currencies endpoint lists.',
+					'supported set is the same the /api/currencies endpoint lists. Rate limited to ' +
+					'60 requests per minute per client IP (per serving instance).',
 				tags: ['conversion'],
 				body: convertRequestSchema,
 				response: {
 					200: convertResponseSchema,
 					400: errorResponseSchema,
 					422: errorResponseSchema,
+					429: errorResponseSchema,
 					500: errorResponseSchema,
 					502: errorResponseSchema,
 				},

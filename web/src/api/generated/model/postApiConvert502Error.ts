@@ -3,7 +3,7 @@
  * Do not edit manually.
  * Currency Conversion API
  * Currency conversion with live exchange rates — Purple LAB case study.
- * OpenAPI spec version: 0.10.0
+ * OpenAPI spec version: 0.11.0
  */
 import type { PostApiConvert502ErrorCode } from './postApiConvert502ErrorCode';
 import type { PostApiConvert502ErrorParams } from './postApiConvert502ErrorParams';

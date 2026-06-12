@@ -63,4 +63,47 @@ describe('the mutator base URL — the explicit ?? fallback (prompt v0.9.0)', ()
 			status: 422,
 		});
 	});
+
+	// additive at v0.11.0 (the edge-case pass): the NON-unified fallback path was untested —
+	// a gateway HTML page, a timeout, a dead socket must all become the synthetic NETWORK_ERROR
+	// with the errors.network key (the catalog key added at v0.10.0), never a raw axios error
+	it('maps a NON-unified error payload (a gateway HTML page) onto the synthetic NETWORK_ERROR', async () => {
+		vi.resetModules();
+		const { apiInstance } = await import('../../src/api/mutator');
+		const { ApiError } = await import('../../src/api/errors');
+		vi.spyOn(axios, 'request').mockRejectedValue(
+			new axios.AxiosError('Request failed', '503', undefined, undefined, {
+				status: 503,
+				statusText: 'Service Unavailable',
+				headers: {},
+				config: { headers: new axios.AxiosHeaders() },
+				data: '<html><body>503 Service Unavailable</body></html>',
+			}),
+		);
+
+		const failure = apiInstance({ url: '/api/convert', method: 'POST' });
+
+		await expect(failure).rejects.toBeInstanceOf(ApiError);
+		await expect(failure).rejects.toMatchObject({
+			code: 'NETWORK_ERROR',
+			key: 'errors.network',
+		});
+	});
+
+	it('maps a transportless failure (no response at all) onto the synthetic NETWORK_ERROR', async () => {
+		vi.resetModules();
+		const { apiInstance } = await import('../../src/api/mutator');
+		const { ApiError } = await import('../../src/api/errors');
+		vi.spyOn(axios, 'request').mockRejectedValue(
+			new axios.AxiosError('timeout of 10000ms exceeded', 'ECONNABORTED'),
+		);
+
+		const failure = apiInstance({ url: '/api/stats', method: 'GET' });
+
+		await expect(failure).rejects.toBeInstanceOf(ApiError);
+		await expect(failure).rejects.toMatchObject({
+			code: 'NETWORK_ERROR',
+			key: 'errors.network',
+		});
+	});
 });

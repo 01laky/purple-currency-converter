@@ -3,7 +3,7 @@
  * Do not edit manually.
  * Currency Conversion API
  * Currency conversion with live exchange rates — Purple LAB case study.
- * OpenAPI spec version: 0.10.0
+ * OpenAPI spec version: 0.11.0
  */
 import type {
   GetApiCurrencies200,
@@ -42,7 +42,7 @@ export const getApiCurrencies = (
     }
 
 /**
- * Converts the amount using the live cross-rate through the USD base. The rate is returned in FULL precision; result is the only rounded field (half-up, 2 decimal places). rateTimestamp is the time the rates were fetched from the provider, NOT the moment of the conversion — under the stale fallback it honestly carries the older time. Currency codes are case-insensitive and normalized to uppercase; the supported set is the same the /api/currencies endpoint lists.
+ * Converts the amount using the live cross-rate through the USD base. The rate is returned in FULL precision; result is the only rounded field (half-up, 2 decimal places). rateTimestamp is the time the rates were fetched from the provider, NOT the moment of the conversion — under the stale fallback it honestly carries the older time. Currency codes are case-insensitive and normalized to uppercase; the supported set is the same the /api/currencies endpoint lists. Rate limited to 60 requests per minute per client IP (per serving instance).
  * @summary Convert an amount between two currencies
  */
 export const postApiConvert = (

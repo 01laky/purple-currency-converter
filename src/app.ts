@@ -15,6 +15,8 @@ import { LANGUAGES } from './i18n/constants.js';
 import { TRANSLATIONS, formatEnglishMessage } from './i18n/loader.js';
 import { EnvVar, ErrorCode, ErrorKey } from './lib/enums.js';
 import type { ApiErrorBody, ErrorParams } from './lib/types.js';
+import { createRatesProvider } from './rates/provider.js';
+import type { RatesProvider } from './rates/types.js';
 import { errorResponseSchema, healthResponseSchema, initResponseSchema } from './schemas.js';
 import type { HealthResponse, InitResponse } from './schemas.js';
 
@@ -133,18 +135,21 @@ const errorHandler = async (
 };
 
 /**
- * @name healthHandler
+ * @name createHealthHandler
  *
- * @description Handler of GET /health — instance diagnostics (proposal §3): the version from
- * package.json, the process uptime and the rates-cache age (null until the cache exists, v0.3.0).
+ * @description Builds the GET /health handler — instance diagnostics (proposal §3): the
+ * version from package.json, the process uptime and the real age of the rates cache (null
+ * before the first fetch; /health itself never triggers a fetch).
  *
- * @returns {HealthResponse} the health response body
+ * @param {RatesProvider} ratesProvider the provider whose cache age is reported
+ *
+ * @returns {() => HealthResponse} the route handler
  */
-const healthHandler = (): HealthResponse => ({
+const createHealthHandler = (ratesProvider: RatesProvider) => (): HealthResponse => ({
 	ok: true,
 	version: pkg.version,
 	uptime: Math.round(process.uptime()),
-	ratesCacheAge: null,
+	ratesCacheAge: ratesProvider.getCacheAgeSeconds(),
 });
 
 /**
@@ -214,6 +219,8 @@ export const buildApp = async (): Promise<FastifyInstance> => {
 	app.setNotFoundHandler(notFoundHandler);
 	app.setErrorHandler(errorHandler);
 
+	const ratesProvider = createRatesProvider();
+
 	const typed = app.withTypeProvider<ZodTypeProvider>();
 
 	typed.get(
@@ -228,7 +235,7 @@ export const buildApp = async (): Promise<FastifyInstance> => {
 				response: { 200: healthResponseSchema, 500: errorResponseSchema },
 			},
 		},
-		healthHandler,
+		createHealthHandler(ratesProvider),
 	);
 
 	typed.get(

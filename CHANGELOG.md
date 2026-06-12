@@ -4,6 +4,20 @@ All notable changes to this project are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html). Every entry carries the datetime the version was closed — together with the AI_DIARY.md datetimes it is the source of the submission time budget (rule 14).
 
+## [0.3.0] — 2026-06-12 05:58
+
+### Added
+
+- **The rates module (`src/rates/`)** — the openexchangerates client with an injectable fetch, a 5 s AbortController timeout and Zod parsing of the external response (the shape is never assumed); the key never appears in errors or logs.
+- **The generic cache (`createCachedSource<T>`)** — in-memory, TTL 10 minutes, an injected clock for deterministic tests; concurrent callers share a single in-flight fetch; a failed refresh serves the stale copy with its original `fetchedAt`, a failed first fetch propagates.
+- **The cross-rate provider** — every pair computed through the USD base (`rate(from→to) = usdRates[to] / usdRates[from]`, full precision); `rateTimestamp` = the moment the cached payload was fetched from OER (ISO 8601 UTC), honestly older under the stale fallback; the supported-currency list as the keys of the cached rates; module errors (`RateProviderUnavailableError` — the 502 of v0.4.0, `UnknownRateCurrencyError` — never a silent NaN).
+- **Tests** — 19 new (42 total): the cache TTL/stale/deduplication behavior under fake time, the client parsing/timeout/missing-key branches, the cross-rate math and the provider error and age semantics.
+
+### Changed
+
+- **`GET /health`** — `ratesCacheAge` is now wired to the real rates cache (still `null` until the first fetch; the endpoint never triggers one).
+- **`.env.example`** — adds `OER_API_KEY` (empty — a secret).
+
 ## [0.2.0] — 2026-06-12 05:44
 
 ### Added
@@ -43,6 +57,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 - **AI collaboration diary (`AI_DIARY.md`)** — created on day one, with the record template in the file header.
 - **Repo hygiene (`.gitignore`)** — secrets (`.env*` except `.env.example`), local AI permissions (`.claude/settings.local.json`), dependencies and build outputs.
 
+[0.3.0]: https://github.com/01laky/purple-currency-converter/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/01laky/purple-currency-converter/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/01laky/purple-currency-converter/compare/v0.0.0...v0.1.0
 [0.0.0]: https://github.com/01laky/purple-currency-converter/releases/tag/v0.0.0

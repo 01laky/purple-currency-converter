@@ -1,0 +1,28 @@
+{
+	"errors": {
+		"notFound": "Resource not found",
+		"internal": "Internal server error",
+		"rateProvider": "Exchange rate provider is unavailable",
+		"rateLimited": "Too many requests, please try again later",
+		"unsupportedCurrency": "Currency {{code}} is not supported",
+		"validation": {
+			"invalidRequest": "Invalid request",
+			"amountNotPositive": "Amount must be a positive number",
+			"amountTooLarge": "Amount exceeds the maximum supported value",
+			"amountTooManyDecimals": "Amount must have at most 2 decimal places",
+			"invalidCurrencyCode": "Currency code must be 3 letters",
+			"sameCurrency": "Source and target currencies must be different"
+		}
+	},
+	"ui": {
+		"title": "Purple currency converter",
+		"amountToConvert": "Amount to convert",
+		"from": "From",
+		"to": "To",
+		"convertCurrency": "Convert currency",
+		"result": "Result",
+		"numberOfCalculations": "Number of calculations made",
+		"topTargetCurrency": "Top target currency",
+		"totalAmountEur": "Total amount in EUR"
+	}
+}

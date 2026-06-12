@@ -1,4 +1,4 @@
-import { randomUUID } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import helmet from '@fastify/helmet';
 import swagger from '@fastify/swagger';
 import swaggerUi from '@fastify/swagger-ui';
@@ -11,27 +11,35 @@ import {
 } from 'fastify-type-provider-zod';
 import type { ZodTypeProvider } from 'fastify-type-provider-zod';
 import pkg from '../package.json' with { type: 'json' };
-import { ENGLISH_MESSAGES } from './lib/constants.js';
+import { LANGUAGES } from './i18n/constants.js';
+import { TRANSLATIONS, formatEnglishMessage } from './i18n/loader.js';
 import { EnvVar, ErrorCode, ErrorKey } from './lib/enums.js';
 import type { ApiErrorBody, ErrorParams } from './lib/types.js';
-import { errorResponseSchema, healthResponseSchema } from './schemas.js';
-import type { HealthResponse } from './schemas.js';
+import { errorResponseSchema, healthResponseSchema, initResponseSchema } from './schemas.js';
+import type { HealthResponse, InitResponse } from './schemas.js';
+
+const INIT_RESPONSE: InitResponse = { languages: [...LANGUAGES], translations: TRANSLATIONS };
+
+// The texts are static per process (proposal §3) — one hash for the whole lifetime
+const INIT_ETAG = `"${createHash('sha256').update(JSON.stringify(INIT_RESPONSE)).digest('hex')}"`;
 
 /**
  * @name buildErrorBody
  *
  * @description Builds the unified error response body { error: { code, key, message, params? } }
- * (proposal §3). The message is the English text of the key; the i18n files become the source
- * in v0.2.0.
+ * (proposal §3). The message is the EN translation of the key with the params interpolated —
+ * the i18n files are the single source of every text.
  *
  * @param {ErrorCode} code programmatic error code
  * @param {ErrorKey} key i18n key of the message
  * @param {ErrorParams} params optional interpolation values
  *
  * @returns {ApiErrorBody} the response body in the unified error shape
+ *
+ * @throws {Error} when the key is missing from the EN translations (rule 24 — no fallback)
  */
 const buildErrorBody = (code: ErrorCode, key: ErrorKey, params?: ErrorParams): ApiErrorBody => {
-	const body: ApiErrorBody = { error: { code, key, message: ENGLISH_MESSAGES[key] } };
+	const body: ApiErrorBody = { error: { code, key, message: formatEnglishMessage(key, params) } };
 	if (params !== undefined) {
 		body.error.params = params;
 	}
@@ -140,6 +148,32 @@ const healthHandler = (): HealthResponse => ({
 });
 
 /**
+ * @name initHandler
+ *
+ * @description Handler of GET /api/init (proposal §3): serves the languages and all the
+ * translation trees at once. Every response carries the process-constant strong ETag and
+ * Cache-Control: no-cache; a request whose If-None-Match matches gets 304 Not Modified with
+ * an empty body — standard HTTP revalidation, no custom cache logic.
+ *
+ * @param {FastifyRequest} request the incoming request (read for If-None-Match)
+ * @param {FastifyReply} reply the reply being built
+ *
+ * @returns {Promise<InitResponse | undefined>} the payload, or undefined once the 304 is sent
+ */
+const initHandler = async (
+	request: FastifyRequest,
+	reply: FastifyReply,
+): Promise<InitResponse | undefined> => {
+	void reply.header('etag', INIT_ETAG);
+	void reply.header('cache-control', 'no-cache');
+	if (request.headers['if-none-match'] === INIT_ETAG) {
+		await reply.code(304).send();
+		return undefined;
+	}
+	return INIT_RESPONSE;
+};
+
+/**
  * @name buildApp
  *
  * @description Builds the pure Fastify app with all the logic (adapter architecture, proposal
@@ -180,7 +214,9 @@ export const buildApp = async (): Promise<FastifyInstance> => {
 	app.setNotFoundHandler(notFoundHandler);
 	app.setErrorHandler(errorHandler);
 
-	app.withTypeProvider<ZodTypeProvider>().get(
+	const typed = app.withTypeProvider<ZodTypeProvider>();
+
+	typed.get(
 		'/health',
 		{
 			schema: {
@@ -193,6 +229,23 @@ export const buildApp = async (): Promise<FastifyInstance> => {
 			},
 		},
 		healthHandler,
+	);
+
+	typed.get(
+		'/api/init',
+		{
+			schema: {
+				summary: 'All texts of the system',
+				description:
+					'The supported languages and the complete translation trees of all of them at once. ' +
+					'Every response carries a strong ETag (constant for the process lifetime) and ' +
+					'Cache-Control: no-cache; a request with a matching If-None-Match receives ' +
+					'304 Not Modified with an empty body.',
+				tags: ['i18n'],
+				response: { 200: initResponseSchema, 500: errorResponseSchema },
+			},
+		},
+		initHandler,
 	);
 
 	return app;

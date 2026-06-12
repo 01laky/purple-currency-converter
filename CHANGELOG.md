@@ -4,6 +4,26 @@ All notable changes to this project are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html). Every entry carries the datetime the version was closed — together with the AI_DIARY.md datetimes it is the source of the submission time budget (rule 14).
 
+## [0.10.0] — 2026-06-12 15:40
+
+**Level 2 functionally complete: the frontend completion and the same-origin production.**
+
+### Added
+
+- **The statistics live in the Result card** — the three assignment statistics in the Figma label+value style with the 1 px divider: the count (`formatCount`), the top target currency and the EUR total (`formatMoney`); loaded at the boot and **refreshed after every successful conversion** — the user watches the persistence live. The §10 empty state shows honest zeros; a fetch failure renders dashes and silently retries with the next refresh — the converter never blocks.
+- **The language changer** — centered ABOVE the title on both breakpoints (the human's UX decision — the planned corner placement collided with the title on mobile); the codes come from the server list, a click switches instantly, persists to localStorage and updates `<html lang>`.
+- **The two-level error mapping** — the code picks the family, the KEY picks the placement (the human's review finding): the amount keys at the field, `sameCurrency`/`invalidCurrencyCode` and the 422 at the selects, the generic 400 at the form, the provider/network failures as the page-level banner; everything translated by `key` with `params`, everything `role="alert"`.
+- **`errors.network` in the catalog** — the synthetic transport error gets an honest text instead of blaming the server via `errors.internal`; a data addition through `/api/init`, zero OpenAPI change.
+- **The announced in-flight state** — the Convert button carries `aria-busy` with the inline `role="status"` spinner (a visual-only spinner is silence for a screen reader); the fixed Figma button width prevents the layout shift.
+- **The form defaults** — 0/EUR/CZK (the human's UX decision): the pristine `0` is NOT submittable (the positive-amount validation also closes a latent 0.9.0 gap where "0" reached the API as a 400) and is fully selected on focus — including after a mouse click, where the caret placement at mousedown would have collapsed the selection (a real UX bug the new test caught).
+- **The same-origin production** — `sst.aws.Router` (`/api`, `/docs`, `/health` → the Function URL) + `sst.aws.StaticSite` as the default; one CloudFront URL, no CORS in production, `VITE_API_URL` empty in the build (the 0.9.0 mutator fallback IS this design).
+- **Tests** — api 103, web 41 (16 new): the statistics formats/empty/failure/refresh, the language switch, the placements (structural in/out-of-form assertions), the aria-busy announcement, the defaults including the select-all-survives-the-mouse behavior.
+
+### Changed
+
+- **`/api/stats` and `/health` actively send `Cache-Control: no-store`** (the human's review finding): behind the CloudFront Router a MISSING header is an instruction vacuum a default TTL may fill — and a cached stats endpoint would invisibly break the refreshed-after-every-conversion behavior; §3 amended, the v0.6.0 absence-asserting test updated under the rule-29 carve-out.
+- **The H1 centering** — guaranteed on every viewport (a 0.9.0 defect on non-desktop devices; the design always said centered).
+
 ## [0.9.0] — 2026-06-12 14:39
 
 **Level 2 starts: the frontend base.**
@@ -126,6 +146,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 - **AI collaboration diary (`AI_DIARY.md`)** — created on day one, with the record template in the file header.
 - **Repo hygiene (`.gitignore`)** — secrets (`.env*` except `.env.example`), local AI permissions (`.claude/settings.local.json`), dependencies and build outputs.
 
+[0.10.0]: https://github.com/01laky/purple-currency-converter/compare/v0.9.0...v0.10.0
 [0.9.0]: https://github.com/01laky/purple-currency-converter/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/01laky/purple-currency-converter/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/01laky/purple-currency-converter/compare/v0.6.0...v0.7.0

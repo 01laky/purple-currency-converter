@@ -4,6 +4,7 @@
 		"internal": "Internal server error",
 		"rateProvider": "Exchange rate provider is unavailable",
 		"rateLimited": "Too many requests, please try again later",
+		"network": "Connection failed — please check your network",
 		"unsupportedCurrency": "Currency {{code}} is not supported",
 		"validation": {
 			"invalidRequest": "Invalid request",

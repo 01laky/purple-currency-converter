@@ -216,3 +216,13 @@ Record template:
 **My intervention:** All four findings plus the placement decision into the prompt (and two §10/§3 amendments into the proposal); on (1) I accepted two corrections of my own claims and the AI accepted my semantic point — the catalog grows by one honest key.
 
 **Lesson:** "Resolved" and "resolved WELL" are different review questions — my premise was wrong about the first and right about the second. Error CODES are families, not addresses: the key is the address. And when the infrastructure changes, every guarantee phrased as an ABSENCE ("no headers", "no config") must be re-read as a question: absence of an instruction is itself an instruction someone else may give.
+
+## [2026-06-12 15:40] — v0.10.0: a test that found a real mouse bug, and a question that found dead weight
+
+**Context:** Implementing `prompt/v0.10.0.md` — the statistics, the language changer, the error placements, the defaults, the same-origin deploy config.
+
+**What happened:** Two moments stand out. (1) The select-all-on-focus test failed with "0100" — and the failure was NOT a test problem: in real browsers the caret placement happens at MOUSEDOWN, so the select() fired in the focus handler gets collapsed before the user types; my approved default-0 UX would have produced "0100" for every mouse user. The fix re-selects once on mouseup; the test now encodes the real-world behavior. (2) Mid-implementation I asked why the proposal still carried a whole "Authentication: none" section — dead weight explaining something nobody asked about; it is gone, §15 trimmed too. Also worth recording: the no-fallback policy DEFENDED itself during the version — the 0.9.0 test fixtures lacked the new statistics keys and the suite failed loudly with "Missing translation" instead of rendering raw keys (exactly the designed behavior, just aimed at ourselves); and the one genuine rule-29 carve-out (the reserved-space dash assertion meeting the legitimate new dashes of the statistics rows) is documented inline with a CHANGED comment.
+
+**My intervention:** The dead-section removal was my call; the mouse-bug diagnosis and fix were the AI's, prompted by its own failing test.
+
+**Lesson:** A UX decision ("default 0, replaced on focus") is not implemented until it survives a MOUSE — keyboard-only reasoning ships keyboard-only behavior. And documents accrete: a periodic "why is this paragraph here" prunes what reviews added in better times.

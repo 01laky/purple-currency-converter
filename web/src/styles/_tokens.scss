@@ -24,6 +24,7 @@ $color-button-bg: #522974;
 $button-radius: 6px;
 $button-shadow: drop-shadow(4px 4px 6px rgba(0, 0, 0, 0.11));
 $button-height: 52px;
+$button-width: 167px; // fixed per Figma — also prevents the inline-spinner layout shift
 $button-padding-x: 26px;
 $button-gap-top: 32px; // button top 445 − card bottom 413
 

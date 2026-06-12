@@ -1,0 +1,26 @@
+@use '../../styles/tokens' as t;
+
+.changer {
+	display: flex;
+	justify-content: center;
+	gap: 12px;
+}
+
+.option,
+.active {
+	padding: 4px 8px;
+	font: t.$font-field;
+	letter-spacing: t.$letter-spacing-label;
+	color: t.$color-text-muted;
+	background: none;
+	border: none;
+	border-radius: t.$select-radius;
+	cursor: pointer;
+}
+
+.active {
+	color: t.$color-field-text;
+	font-weight: 500;
+	background: t.$color-field-bg;
+	border: 1px solid t.$color-field-border;
+}

@@ -3,7 +3,7 @@
 	"info": {
 		"title": "Currency Conversion API",
 		"description": "Currency conversion with live exchange rates — Purple LAB case study.",
-		"version": "0.9.0"
+		"version": "0.10.0"
 	},
 	"components": {
 		"schemas": {}

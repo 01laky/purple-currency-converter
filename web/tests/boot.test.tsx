@@ -9,6 +9,12 @@ vi.mock('../src/api/generated/client', () => ({
 	getApiInit: vi.fn(),
 	getApiCurrencies: vi.fn(),
 	postApiConvert: vi.fn(),
+	// the page fetches the statistics on mount since 0.10.0 — the harness must answer
+	getApiStats: vi.fn(async () => ({
+		totalConversions: 0,
+		totalAmountEur: 0,
+		topTargetCurrency: null,
+	})),
 }));
 
 import { getApiCurrencies, getApiInit } from '../src/api/generated/client';

@@ -63,6 +63,11 @@
 }
 
 .button {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	min-width: t.$button-width;
 	height: t.$button-height;
 	padding: 0 t.$button-padding-x;
 	font: t.$font-label;
@@ -83,4 +88,43 @@
 	margin: 0;
 	font: t.$font-result-label;
 	color: t.$color-card-bg;
+}
+
+.banner {
+	width: 100%;
+	max-width: t.$card-width-web;
+	margin: 0;
+	padding: 12px t.$field-padding-x;
+	font: t.$font-label;
+	letter-spacing: t.$letter-spacing-label;
+	color: t.$color-field-bg;
+	text-align: center;
+	background: t.$color-card-bg;
+	border-radius: t.$button-radius;
+
+	@include m.mobile {
+		max-width: t.$card-width-mobile;
+	}
+}
+
+.fieldError {
+	margin: 0;
+	font: t.$font-field;
+	letter-spacing: t.$letter-spacing-label;
+	color: t.$color-field-bg;
+}
+
+.buttonSpinner {
+	width: 16px;
+	height: 16px;
+	border: 2px solid rgba(255, 255, 255, 0.4);
+	border-top-color: t.$color-field-bg;
+	border-radius: 50%;
+	animation: buttonSpin 0.8s linear infinite;
+}
+
+@keyframes buttonSpin {
+	to {
+		transform: rotate(360deg);
+	}
 }

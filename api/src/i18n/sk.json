@@ -4,6 +4,7 @@
 		"internal": "Interná chyba servera",
 		"rateProvider": "Poskytovateľ výmenných kurzov je nedostupný",
 		"rateLimited": "Príliš veľa požiadaviek, skúste to prosím neskôr",
+		"network": "Pripojenie zlyhalo — skontrolujte prosím sieť",
 		"unsupportedCurrency": "Mena {{code}} nie je podporovaná",
 		"validation": {
 			"invalidRequest": "Neplatná požiadavka",

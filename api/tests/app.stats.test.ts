@@ -104,10 +104,13 @@ describe('GET /api/stats over the DI seam', () => {
 		});
 	});
 
-	it('carries NO cache headers of any kind — the statistics are always fresh', async () => {
+	// CHANGED at v0.10.0 under the rule-29 carve-out, required by prompt/v0.10.0.md: behind the
+	// CloudFront Router the ABSENCE of Cache-Control is a vacuum a default TTL may fill — the
+	// §3 always-fresh guarantee is now an explicit no-store, not a missing header.
+	it('actively sends Cache-Control: no-store — the statistics are always fresh', async () => {
 		const response = await app.inject({ method: 'GET', url: '/api/stats' });
 
-		expect(response.headers['cache-control']).toBeUndefined();
+		expect(response.headers['cache-control']).toBe('no-store');
 		expect(response.headers['etag']).toBeUndefined();
 		expect(response.headers['expires']).toBeUndefined();
 	});

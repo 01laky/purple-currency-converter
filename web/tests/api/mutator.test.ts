@@ -9,6 +9,9 @@ afterEach(() => {
 
 describe('the mutator base URL — the explicit ?? fallback (prompt v0.9.0)', () => {
 	it('uses the empty string when VITE_API_URL is unset — the same-origin production semantics', async () => {
+		// stub to undefined explicitly: a developer's local web/.env would otherwise leak into
+		// import.meta.env and make this test environment-dependent (found at 0.10.0)
+		vi.stubEnv('VITE_API_URL', undefined);
 		vi.resetModules();
 		const { apiInstance } = await import('../../src/api/mutator');
 		const requestSpy = vi.spyOn(axios, 'request').mockResolvedValue({ data: { ok: true } });

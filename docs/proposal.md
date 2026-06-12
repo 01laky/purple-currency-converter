@@ -124,7 +124,7 @@ No path versioning (no `/api/v1`): the API has a single consumer, the contract i
 ```
 
 - **The backend is the single source of all texts** — `api/src/i18n/{en,cs,sk}.json` contain the backend error messages as well as the frontend UI texts. The frontend downloads them at app boot through the generated client (the endpoint is part of the OpenAPI contract). Translations are data flowing through the contract — the no-code-sharing principle (§2) is untouched.
-- **The key catalog is fixed and the keys are camelCase paths (not error codes):** `errors.{notFound, internal, rateProvider, rateLimited, unsupportedCurrency}`, `errors.validation.{invalidRequest, amountNotPositive, amountTooLarge, amountTooManyDecimals, invalidCurrencyCode, sameCurrency}`, `ui.{title, amountToConvert, from, to, convertCurrency, result, numberOfCalculations, topTargetCurrency, totalAmountEur, retry}` (`retry` added at 0.9.0 — §10 demands a retry option on a currencies failure and the catalog lacked its label); interpolation through the `{{param}}` placeholder.
+- **The key catalog is fixed and the keys are camelCase paths (not error codes):** `errors.{notFound, internal, rateProvider, rateLimited, unsupportedCurrency, network}` (`network` added at 0.10.0 — the frontend's synthetic transport error deserves an honest text instead of blaming the server via `internal`), `errors.validation.{invalidRequest, amountNotPositive, amountTooLarge, amountTooManyDecimals, invalidCurrencyCode, sameCurrency}`, `ui.{title, amountToConvert, from, to, convertCurrency, result, numberOfCalculations, topTargetCurrency, totalAmountEur, retry}` (`retry` added at 0.9.0 — §10 demands a retry option on a currencies failure and the catalog lacked its label); interpolation through the `{{param}}` placeholder.
 - **Three languages: EN, CS, SK** — codes per ISO 639-1 (Czech = `cs`). The endpoint returns all languages at once: the texts are small (a few KB), one ETag, and switching the language on the frontend is instant without another request. The language list is sent by the backend — the frontend hardcodes nothing.
 - **Revalidation via HTTP ETag (conditional requests):** the response carries an `ETag` (a hash of the JSON, computed once at process start) + `Cache-Control: no-cache`. On the next load the browser automatically sends `If-None-Match` and the backend replies `304 Not Modified` with an empty body when the texts have not changed. Standard HTTP behavior — no manual hash endpoint and no custom cache logic.
 - **Fallback:** if `/api/init` fails, the frontend shows a single hardcoded message ("Failed to load application"). A bundled backup copy of the translations does not exist — it would double the maintenance and defeat the single-source principle.
@@ -137,7 +137,7 @@ No path versioning (no `/api/v1`): the API has a single consumer, the contract i
 { "totalConversions": 42, "totalAmountEur": 12345.67, "topTargetCurrency": "EUR" }
 ```
 
-Statistics are **never cached anywhere** (no HTTP cache headers) — they are always fresh.
+Statistics are **never cached anywhere** — they are always fresh. The response actively sends **`Cache-Control: no-store`** (revised at 0.10.0: behind the Router a MISSING header is an instruction vacuum CloudFront may fill with its default TTL — the original "no HTTP cache headers" protected freshness only at the direct Function URL). `/health` sends `no-store` for the same reason: cached diagnostics lie.
 
 ### `GET /health`
 
@@ -279,10 +279,6 @@ Frontend tests never call the real API — the generated axios client is mocked;
 - IAM least privilege — through the SST `link` the Lambda can access exactly its one table
 - Security headers via `@fastify/helmet`
 - Fastify defaults — a 1 MB body limit, strict JSON parsing
-
-### Authentication: none
-
-A public converter with no user data and no PII — authentication is not introduced and is not planned even as a future step.
 
 ### Rate limiting (implemented in the hardening version)
 
@@ -440,13 +436,3 @@ Every version of the roadmap from v0.1.0 onward has a prompt in [`/prompt`](../p
 | **1.0.0**  | Submission finalization: the AI diary complete, the future vision (the README-top section — §12), the time budget (summed from the changelog/diary datetimes), the final README                                                                                                                                                                              | submission                         |
 
 Milestones: **0.8.0 = a submittable Level 1** (if time ran out, this is where to cut), **1.0.0 = the full Level 2 submission**.
-
-## 15. Out of scope (consciously)
-
-Multi-region, CD (automatic deploys from CI), API Gateway throttling/WAF — the README mentions them as "next steps", they are not implemented. Authentication is not a "next step" — it will not exist at all (§9). Rate limiting IS in scope (§9, the hardening version). CI (typecheck + lint + tests on push/PR) IS in scope from v0.1.0.
-
-## Backlog
-
-Everything that appears during the work and is not in the scope of any version is recorded here (rule 25). The items are planned only after v1.0.0.
-
-- A conversion event log (history, not just aggregates) — if the statistics were to grow into charts/time series (§6)

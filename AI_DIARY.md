@@ -122,3 +122,13 @@ Record template:
 **My intervention:** All five findings written into the prompt; the AI's nuances accepted (it also pinned that the order reliance gets a code comment and that pagination is a non-issue at ~170 items).
 
 **Lesson:** The most dangerous prompt bugs quote the spec verbatim — §5's "simply the amount" is correct in its own context and wrong in the function that returns cents. Unit context matters more than faithful quoting; a guarantee ("never fails because of statistics") must be traced to EVERY call that could break it; and knowing what the database already guarantees (the sort order) deletes code before it exists.
+
+## [2026-06-12 13:02] — v0.6.0: five findings later, the implementation was transcription
+
+**Context:** Implementing `prompt/v0.6.0.md` — the statistics module, the DI-seamed wiring and `GET /api/stats`. Level 1 is now functionally complete and the L2 persistence with it.
+
+**What happened:** The five-findings prompt review paid off exactly as intended: all five landed in code verbatim — the EUR branch returns `Math.round(amount × 100)` with a spy proving getRate is never called, one try/catch wraps both statistics legs (with the GBP→USD test where only the GBP→EUR leg throws and the response is still 200), the tie-break is a single pass with a strict `>` over the Query's ascending order (the reliance is a code comment and a test), the schema says nonnegative integer, and the retry logs two warns through the request-scoped logger before the final error. One honest stumble worth recording: the AI's first version of the flaky-client retry test was an ugly `Object.setPrototypeOf` hack to satisfy the client type — the typecheck hook rejected it, and the AI replaced it with a clean `vi.spyOn` on a real DocumentClient instance. The hook keeps earning its keep. The end-to-end test — `POST /api/convert` landing in `GET /api/stats` through the real dynamodb-local — passed on the first run; 95 tests total, the suite still under three seconds.
+
+**My intervention:** None during the implementation — the prompt carried the whole review.
+
+**Lesson:** The review effort moved entirely to the prompt stage and the implementation became transcription plus verification — the second version in a row confirming the pattern. The deeper the prompt review, the more boring the implementation; in money-and-persistence code, boring is exactly the goal.

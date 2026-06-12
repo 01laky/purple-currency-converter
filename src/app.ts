@@ -23,6 +23,9 @@ import type { ApiErrorBody, BuildAppDeps, ErrorParams } from './lib/types.js';
 import { RateProviderUnavailableError } from './rates/errors.js';
 import { createRatesProvider } from './rates/provider.js';
 import type { RatesProvider } from './rates/types.js';
+import { toEurCents } from './stats/eur.js';
+import { createStatsRepository } from './stats/repository.js';
+import type { StatsRepository } from './stats/types.js';
 import {
 	convertRequestSchema,
 	convertResponseSchema,
@@ -30,12 +33,14 @@ import {
 	errorResponseSchema,
 	healthResponseSchema,
 	initResponseSchema,
+	statsResponseSchema,
 } from './schemas.js';
 import type {
 	ConvertRequest,
 	CurrenciesResponse,
 	HealthResponse,
 	InitResponse,
+	StatsResponse,
 } from './schemas.js';
 
 // ErrorKey values for the Zod-key passthrough guard — schema messages ARE keys (§3)
@@ -235,19 +240,52 @@ const createCurrenciesHandler =
 /**
  * @name createConvertHandler
  *
- * @description Builds the POST /api/convert handler (proposal §3/§5): the body arrives
+ * @description Builds the POST /api/convert handler (proposal §3/§5/§6): the body arrives
  * validated and normalized by the Zod schema; the service validates the currencies against
  * the supported list, fetches the full-precision cross-rate and rounds the result exactly
- * once.
+ * once. After a successful conversion the WHOLE statistics step (the EUR conversion AND the
+ * counter write) runs inside one try/catch — a failure of either leg is logged with the
+ * request id and the 200 response goes out unchanged: the conversion never fails because of
+ * statistics (§6).
  *
  * @param {RatesProvider} ratesProvider the provider serving the rates
+ * @param {StatsRepository} statsRepository the repository recording the conversion
  *
  * @returns {(request: FastifyRequest<{ Body: ConvertRequest }>) => Promise<ConvertResult>} the route handler
  */
 const createConvertHandler =
-	(ratesProvider: RatesProvider) =>
-	async (request: FastifyRequest<{ Body: ConvertRequest }>): Promise<ConvertResult> =>
-		convertAmount(request.body, ratesProvider);
+	(ratesProvider: RatesProvider, statsRepository: StatsRepository) =>
+	async (request: FastifyRequest<{ Body: ConvertRequest }>): Promise<ConvertResult> => {
+		const conversion = await convertAmount(request.body, ratesProvider);
+		try {
+			// ONE try around BOTH legs — toEurCents can throw too (prompt v0.6.0)
+			const amountEurCents = await toEurCents(conversion.amount, conversion.from, ratesProvider);
+			await statsRepository.recordConversion(
+				{ targetCurrency: conversion.to, amountEurCents },
+				request.log,
+			);
+		} catch (error) {
+			request.log.error(
+				{ err: error },
+				'statistics step failed — the conversion response is unaffected',
+			);
+		}
+		return conversion;
+	};
+
+/**
+ * @name createStatsHandler
+ *
+ * @description Builds the GET /api/stats handler (proposal §3/§6): the persistent totals and
+ * the top target currency, always fresh — the statistics are never cached anywhere, so the
+ * handler sets NO cache headers of any kind.
+ *
+ * @param {StatsRepository} statsRepository the repository serving the totals
+ *
+ * @returns {() => Promise<StatsResponse>} the route handler
+ */
+const createStatsHandler = (statsRepository: StatsRepository) => (): Promise<StatsResponse> =>
+	statsRepository.getStats();
 
 /**
  * @name initHandler
@@ -320,6 +358,7 @@ export const buildApp = async (deps?: BuildAppDeps): Promise<FastifyInstance> =>
 	app.setErrorHandler(errorHandler);
 
 	const ratesProvider = deps?.ratesProvider ?? createRatesProvider();
+	const statsRepository = deps?.statsRepository ?? createStatsRepository();
 
 	const typed = app.withTypeProvider<ZodTypeProvider>();
 
@@ -382,7 +421,24 @@ export const buildApp = async (deps?: BuildAppDeps): Promise<FastifyInstance> =>
 				},
 			},
 		},
-		createConvertHandler(ratesProvider),
+		createConvertHandler(ratesProvider, statsRepository),
+	);
+
+	typed.get(
+		'/api/stats',
+		{
+			schema: {
+				summary: 'Conversion statistics',
+				description:
+					'The persistent totals: the number of conversions, the total amount converted to ' +
+					'EUR at write time, and the most frequent target currency (ties resolve to the ' +
+					'alphabetically first code; null before the first conversion). Never cached — ' +
+					'the response is always fresh.',
+				tags: ['statistics'],
+				response: { 200: statsResponseSchema, 500: errorResponseSchema },
+			},
+		},
+		createStatsHandler(statsRepository),
 	);
 
 	typed.get(

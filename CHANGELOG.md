@@ -4,6 +4,16 @@ All notable changes to this project are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html). Every entry carries the datetime the version was closed — together with the AI_DIARY.md datetimes it is the source of the submission time budget (rule 14).
 
+## [0.6.0] — 2026-06-12 13:02
+
+### Added
+
+- **The statistics module (`src/stats/`)** — the §6 model: one table, atomic counters, no event log. Every conversion writes ONE `TransactWriteItems` with two `Update ADD`s (the global `conversionCount`/`totalEurCents` + the per-target counter) — both succeed or neither does, the global count can never drift from the target sum; no read before write.
+- **`GET /api/stats`** — the persistent totals: `totalConversions` (a nonnegative integer in the contract), `totalAmountEur` (integer cents / 100, nonnegative), `topTargetCurrency` (nullable — `null` at zero conversions, the honest empty state); ties resolve to the alphabetically first code with one pass and a strict `>` over the Query's ascending sort-key order — no sort; the response carries NO cache headers of any kind.
+- **The EUR-at-write-time conversion (`toEurCents`)** — integer cents: `from = EUR` → `Math.round(amount × 100)` directly (no rate lookup); otherwise through `rate(from→EUR)` from the same cached payload, rounded once by `roundMoney`.
+- **The write-failure policy live** — the statistics step (BOTH the EUR conversion and the write) runs in one try/catch: a conversion never fails because of statistics; the write retries ×3 with an injectable backoff, transient attempts log `warn` through the request-scoped logger (the retry lines carry the request id), the final failure logs `error` and the 200 still goes out.
+- **Tests** — 15 new (95 total): the `toEurCents` branches (including the no-rate-lookup EUR spy), the repository against the real dynamodb-local (transactional totals, the tie-break, the empty state, the retry warn counts, the exhausted-retry throw), the API shape with no cache headers, both still-200 failure paths, and the end-to-end persistence proof: `POST /api/convert` → `GET /api/stats` through the real database.
+
 ## [0.5.0] — 2026-06-12 12:37
 
 ### Added
@@ -79,6 +89,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 - **AI collaboration diary (`AI_DIARY.md`)** — created on day one, with the record template in the file header.
 - **Repo hygiene (`.gitignore`)** — secrets (`.env*` except `.env.example`), local AI permissions (`.claude/settings.local.json`), dependencies and build outputs.
 
+[0.6.0]: https://github.com/01laky/purple-currency-converter/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/01laky/purple-currency-converter/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/01laky/purple-currency-converter/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/01laky/purple-currency-converter/compare/v0.2.0...v0.3.0

@@ -3,7 +3,7 @@
 	"info": {
 		"title": "Currency Conversion API",
 		"description": "Currency conversion with live exchange rates — Purple LAB case study.",
-		"version": "0.4.0"
+		"version": "0.5.0"
 	},
 	"components": {
 		"schemas": {}
@@ -72,7 +72,8 @@
 														"VALIDATION_ERROR",
 														"NOT_FOUND",
 														"INTERNAL_ERROR",
-														"RATE_PROVIDER_ERROR"
+														"RATE_PROVIDER_ERROR",
+														"UNSUPPORTED_CURRENCY"
 													],
 													"description": "Programmatic error code"
 												},
@@ -165,7 +166,8 @@
 														"VALIDATION_ERROR",
 														"NOT_FOUND",
 														"INTERNAL_ERROR",
-														"RATE_PROVIDER_ERROR"
+														"RATE_PROVIDER_ERROR",
+														"UNSUPPORTED_CURRENCY"
 													],
 													"description": "Programmatic error code"
 												},
@@ -224,7 +226,340 @@
 														"VALIDATION_ERROR",
 														"NOT_FOUND",
 														"INTERNAL_ERROR",
-														"RATE_PROVIDER_ERROR"
+														"RATE_PROVIDER_ERROR",
+														"UNSUPPORTED_CURRENCY"
+													],
+													"description": "Programmatic error code"
+												},
+												"key": {
+													"type": "string",
+													"description": "i18n key for the frontend (translations arrive via GET /api/init in v0.2.0)"
+												},
+												"message": {
+													"type": "string",
+													"description": "Human-readable message, always in English"
+												},
+												"params": {
+													"description": "Interpolation values for the i18n key",
+													"type": "object",
+													"additionalProperties": {
+														"anyOf": [
+															{
+																"type": "string"
+															},
+															{
+																"type": "number"
+															}
+														]
+													}
+												}
+											},
+											"required": [
+												"code",
+												"key",
+												"message"
+											],
+											"additionalProperties": false
+										}
+									},
+									"required": [
+										"error"
+									],
+									"additionalProperties": false
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/convert": {
+			"post": {
+				"summary": "Convert an amount between two currencies",
+				"tags": [
+					"conversion"
+				],
+				"description": "Converts the amount using the live cross-rate through the USD base. The rate is returned in FULL precision; result is the only rounded field (half-up, 2 decimal places). rateTimestamp is the time the rates were fetched from the provider, NOT the moment of the conversion — under the stale fallback it honestly carries the older time. Currency codes are case-insensitive and normalized to uppercase; the supported set is the same the /api/currencies endpoint lists.",
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"amount": {
+										"type": "number",
+										"minimum": 0,
+										"exclusiveMinimum": true,
+										"maximum": 1000000000000,
+										"description": "The amount to convert — positive, at most 2 decimal places, at most 1e12"
+									},
+									"from": {
+										"description": "The source currency — a 3-letter code, case-insensitive",
+										"type": "string",
+										"pattern": "^[A-Za-z]{3}$"
+									},
+									"to": {
+										"description": "The target currency — a 3-letter code, case-insensitive",
+										"type": "string",
+										"pattern": "^[A-Za-z]{3}$"
+									}
+								},
+								"required": [
+									"amount",
+									"from",
+									"to"
+								]
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "Default Response",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"amount": {
+											"type": "number",
+											"description": "The converted amount as requested"
+										},
+										"from": {
+											"type": "string",
+											"description": "The source currency, normalized to uppercase"
+										},
+										"to": {
+											"type": "string",
+											"description": "The target currency, normalized to uppercase"
+										},
+										"rate": {
+											"type": "number",
+											"description": "The exchange rate in FULL precision (not a monetary amount) — verifiable math"
+										},
+										"result": {
+											"type": "number",
+											"description": "The converted value — the only rounded field (half-up, 2 decimal places)"
+										},
+										"rateTimestamp": {
+											"type": "string",
+											"format": "date-time",
+											"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
+											"description": "The time the rates were fetched from the provider (ISO 8601 UTC) — NOT the moment of the conversion; under the stale fallback it honestly carries the older time"
+										}
+									},
+									"required": [
+										"amount",
+										"from",
+										"to",
+										"rate",
+										"result",
+										"rateTimestamp"
+									],
+									"additionalProperties": false
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Default Response",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"error": {
+											"type": "object",
+											"properties": {
+												"code": {
+													"type": "string",
+													"enum": [
+														"VALIDATION_ERROR",
+														"NOT_FOUND",
+														"INTERNAL_ERROR",
+														"RATE_PROVIDER_ERROR",
+														"UNSUPPORTED_CURRENCY"
+													],
+													"description": "Programmatic error code"
+												},
+												"key": {
+													"type": "string",
+													"description": "i18n key for the frontend (translations arrive via GET /api/init in v0.2.0)"
+												},
+												"message": {
+													"type": "string",
+													"description": "Human-readable message, always in English"
+												},
+												"params": {
+													"description": "Interpolation values for the i18n key",
+													"type": "object",
+													"additionalProperties": {
+														"anyOf": [
+															{
+																"type": "string"
+															},
+															{
+																"type": "number"
+															}
+														]
+													}
+												}
+											},
+											"required": [
+												"code",
+												"key",
+												"message"
+											],
+											"additionalProperties": false
+										}
+									},
+									"required": [
+										"error"
+									],
+									"additionalProperties": false
+								}
+							}
+						}
+					},
+					"422": {
+						"description": "Default Response",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"error": {
+											"type": "object",
+											"properties": {
+												"code": {
+													"type": "string",
+													"enum": [
+														"VALIDATION_ERROR",
+														"NOT_FOUND",
+														"INTERNAL_ERROR",
+														"RATE_PROVIDER_ERROR",
+														"UNSUPPORTED_CURRENCY"
+													],
+													"description": "Programmatic error code"
+												},
+												"key": {
+													"type": "string",
+													"description": "i18n key for the frontend (translations arrive via GET /api/init in v0.2.0)"
+												},
+												"message": {
+													"type": "string",
+													"description": "Human-readable message, always in English"
+												},
+												"params": {
+													"description": "Interpolation values for the i18n key",
+													"type": "object",
+													"additionalProperties": {
+														"anyOf": [
+															{
+																"type": "string"
+															},
+															{
+																"type": "number"
+															}
+														]
+													}
+												}
+											},
+											"required": [
+												"code",
+												"key",
+												"message"
+											],
+											"additionalProperties": false
+										}
+									},
+									"required": [
+										"error"
+									],
+									"additionalProperties": false
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Default Response",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"error": {
+											"type": "object",
+											"properties": {
+												"code": {
+													"type": "string",
+													"enum": [
+														"VALIDATION_ERROR",
+														"NOT_FOUND",
+														"INTERNAL_ERROR",
+														"RATE_PROVIDER_ERROR",
+														"UNSUPPORTED_CURRENCY"
+													],
+													"description": "Programmatic error code"
+												},
+												"key": {
+													"type": "string",
+													"description": "i18n key for the frontend (translations arrive via GET /api/init in v0.2.0)"
+												},
+												"message": {
+													"type": "string",
+													"description": "Human-readable message, always in English"
+												},
+												"params": {
+													"description": "Interpolation values for the i18n key",
+													"type": "object",
+													"additionalProperties": {
+														"anyOf": [
+															{
+																"type": "string"
+															},
+															{
+																"type": "number"
+															}
+														]
+													}
+												}
+											},
+											"required": [
+												"code",
+												"key",
+												"message"
+											],
+											"additionalProperties": false
+										}
+									},
+									"required": [
+										"error"
+									],
+									"additionalProperties": false
+								}
+							}
+						}
+					},
+					"502": {
+						"description": "Default Response",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"error": {
+											"type": "object",
+											"properties": {
+												"code": {
+													"type": "string",
+													"enum": [
+														"VALIDATION_ERROR",
+														"NOT_FOUND",
+														"INTERNAL_ERROR",
+														"RATE_PROVIDER_ERROR",
+														"UNSUPPORTED_CURRENCY"
 													],
 													"description": "Programmatic error code"
 												},
@@ -330,7 +665,8 @@
 														"VALIDATION_ERROR",
 														"NOT_FOUND",
 														"INTERNAL_ERROR",
-														"RATE_PROVIDER_ERROR"
+														"RATE_PROVIDER_ERROR",
+														"UNSUPPORTED_CURRENCY"
 													],
 													"description": "Programmatic error code"
 												},

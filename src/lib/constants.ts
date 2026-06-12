@@ -13,3 +13,6 @@ export const DEFAULT_STATS_TABLE = 'ConversionStats';
 
 // /api/currencies HTTP cache (§3) — the browser/CDN side; the server side is the provider cache
 export const CURRENCIES_CACHE_CONTROL = 'public, max-age=3600';
+
+// §3: above ~2^53 JS numbers and cent arithmetic lose precision
+export const MAX_AMOUNT = 1e12;

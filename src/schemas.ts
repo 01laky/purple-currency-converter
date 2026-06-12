@@ -1,7 +1,8 @@
 import { z } from 'zod';
 import { LANGUAGES } from './i18n/constants.js';
 import type { TranslationTree } from './i18n/types.js';
-import { ErrorCode } from './lib/enums.js';
+import { MAX_AMOUNT } from './lib/constants.js';
+import { ErrorCode, ErrorKey } from './lib/enums.js';
 
 export const healthResponseSchema = z.object({
 	ok: z.literal(true).describe('Liveness flag — always true when the instance responds'),
@@ -50,7 +51,67 @@ export const currenciesResponseSchema = z.object({
 		),
 });
 
+/**
+ * @name hasAtMostTwoDecimals
+ *
+ * @description Checks the 2-decimal-places bound on the DECIMAL STRING of the value (the
+ * fraction-part length of toString()) — never via float arithmetic like value * 100 % 1, the
+ * same §5 philosophy as roundMoney. Exponential notation (only reachable for extremes already
+ * rejected by the other bounds) fails the check.
+ *
+ * @param {number} value the amount to check
+ *
+ * @returns {boolean} true when the value has at most 2 decimal places
+ */
+const hasAtMostTwoDecimals = (value: number): boolean => {
+	const text = value.toString();
+	if (text.includes('e') || text.includes('E')) {
+		return false;
+	}
+	return (text.split('.')[1] ?? '').length <= 2;
+};
+
+// Validation messages ARE i18n keys (§3) — the central handler passes them through
+const currencyCodeSchema = z
+	.string()
+	.regex(/^[A-Za-z]{3}$/, ErrorKey.VALIDATION_INVALID_CURRENCY_CODE)
+	.transform((code) => code.toUpperCase());
+
+export const convertRequestSchema = z
+	.object({
+		amount: z
+			.number()
+			.positive(ErrorKey.VALIDATION_AMOUNT_NOT_POSITIVE)
+			.max(MAX_AMOUNT, ErrorKey.VALIDATION_AMOUNT_TOO_LARGE)
+			.refine(hasAtMostTwoDecimals, ErrorKey.VALIDATION_AMOUNT_TOO_MANY_DECIMALS)
+			.describe('The amount to convert — positive, at most 2 decimal places, at most 1e12'),
+		from: currencyCodeSchema.describe('The source currency — a 3-letter code, case-insensitive'),
+		to: currencyCodeSchema.describe('The target currency — a 3-letter code, case-insensitive'),
+	})
+	.refine((body) => body.from !== body.to, ErrorKey.VALIDATION_SAME_CURRENCY);
+
+export const convertResponseSchema = z.object({
+	amount: z.number().describe('The converted amount as requested'),
+	from: z.string().describe('The source currency, normalized to uppercase'),
+	to: z.string().describe('The target currency, normalized to uppercase'),
+	rate: z
+		.number()
+		.describe('The exchange rate in FULL precision (not a monetary amount) — verifiable math'),
+	result: z
+		.number()
+		.describe('The converted value — the only rounded field (half-up, 2 decimal places)'),
+	rateTimestamp: z.iso
+		.datetime()
+		.describe(
+			'The time the rates were fetched from the provider (ISO 8601 UTC) — NOT the moment of the conversion; under the stale fallback it honestly carries the older time',
+		),
+});
+
 export type HealthResponse = z.infer<typeof healthResponseSchema>;
+
+export type ConvertRequest = z.infer<typeof convertRequestSchema>;
+
+export type ConvertResponse = z.infer<typeof convertResponseSchema>;
 
 export type InitResponse = z.infer<typeof initResponseSchema>;
 

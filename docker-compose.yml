@@ -1,0 +1,14 @@
+services:
+  dynamodb:
+    image: amazon/dynamodb-local
+    # root + named volume: the container's default user cannot write into the volume mount
+    user: root
+    command: ['-jar', 'DynamoDBLocal.jar', '-sharedDb', '-dbPath', '/data']
+    ports:
+      # 8002 on the host — 8000 is commonly taken (proposal §2)
+      - '8002:8000'
+    volumes:
+      - dynamodb-data:/data
+
+volumes:
+  dynamodb-data:

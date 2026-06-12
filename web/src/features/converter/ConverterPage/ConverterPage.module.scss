@@ -12,6 +12,10 @@
 
 	@include m.mobile {
 		padding-top: t.$heading-top-mobile;
+		// the title (and everything else) must not touch the viewport edges (the human's
+		// report) — the side margin mirrors the Figma mobile frame (428 − 391 card = ~18/2)
+		padding-left: 16px;
+		padding-right: 16px;
 	}
 }
 

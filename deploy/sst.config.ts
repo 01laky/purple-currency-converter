@@ -71,6 +71,14 @@ export default $config({
 				command: 'npm run build',
 				output: 'dist',
 			},
+			// PIN the production value at build time: a developer's local web/.env (the local
+			// VITE_API_URL=http://localhost:3000) would otherwise get baked into the production
+			// bundle — Vite gives process env vars precedence over .env files, so this empty
+			// string (= the same-origin relative calls) wins regardless of the machine state.
+			// Found live at the first 0.10.0 deploy: the app called localhost from CloudFront.
+			environment: {
+				VITE_API_URL: '',
+			},
 			router: { instance: router },
 		});
 

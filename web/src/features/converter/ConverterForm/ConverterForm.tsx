@@ -84,68 +84,72 @@ export const ConverterForm = ({ currencies, stats, onConverted }: ConverterFormP
 					{t(error.key, error.params)}
 				</p>
 			)}
-			<form className={styles.card} onSubmit={(event) => void handleSubmit(onSubmit)(event)}>
-				<div className={styles.fields}>
-					<div className={styles.field}>
-						<label className={styles.label} htmlFor="amount">
-							{t('ui.amountToConvert')}
-						</label>
-						<input
-							id="amount"
-							className={styles.input}
-							inputMode="decimal"
-							autoFocus
-							onFocus={(event) => {
-								amountJustFocused.current = true;
-								event.currentTarget.select();
-							}}
-							onMouseUp={(event) => {
-								// the caret placement happens at mousedown — RE-select after it, once
-								if (amountJustFocused.current) {
-									event.preventDefault();
+			{/* the form is the transparent wrapper — the BUTTON SITS BELOW THE CARD per Figma
+			    (button top 445 vs the card bottom 413), it is not a card child */}
+			<form className={styles.form} onSubmit={(event) => void handleSubmit(onSubmit)(event)}>
+				<div className={styles.card}>
+					<div className={styles.fields}>
+						<div className={styles.field}>
+							<label className={styles.label} htmlFor="amount">
+								{t('ui.amountToConvert')}
+							</label>
+							<input
+								id="amount"
+								className={styles.input}
+								inputMode="decimal"
+								autoFocus
+								onFocus={(event) => {
+									amountJustFocused.current = true;
 									event.currentTarget.select();
-									amountJustFocused.current = false;
-								}
-							}}
-							{...register('amount', {
-								required: true,
-								pattern: AMOUNT_PATTERN,
-								validate: (value) => Number(value.replace(',', '.')) > 0,
-							})}
+								}}
+								onMouseUp={(event) => {
+									// the caret placement happens at mousedown — RE-select after it, once
+									if (amountJustFocused.current) {
+										event.preventDefault();
+										event.currentTarget.select();
+										amountJustFocused.current = false;
+									}
+								}}
+								{...register('amount', {
+									required: true,
+									pattern: AMOUNT_PATTERN,
+									validate: (value) => Number(value.replace(',', '.')) > 0,
+								})}
+							/>
+							{placement === 'amount' && error !== null && (
+								<p className={styles.fieldError} role="alert">
+									{t(error.key, error.params)}
+								</p>
+							)}
+						</div>
+						<CurrencySelect
+							id="from"
+							label={t('ui.from')}
+							value={from}
+							currencies={currencies}
+							excludeCode={to}
+							onChange={setFrom}
 						/>
-						{placement === 'amount' && error !== null && (
-							<p className={styles.fieldError} role="alert">
-								{t(error.key, error.params)}
-							</p>
-						)}
+						<CurrencySelect
+							id="to"
+							label={t('ui.to')}
+							value={to}
+							currencies={currencies}
+							excludeCode={from}
+							onChange={setTo}
+						/>
 					</div>
-					<CurrencySelect
-						id="from"
-						label={t('ui.from')}
-						value={from}
-						currencies={currencies}
-						excludeCode={to}
-						onChange={setFrom}
-					/>
-					<CurrencySelect
-						id="to"
-						label={t('ui.to')}
-						value={to}
-						currencies={currencies}
-						excludeCode={from}
-						onChange={setTo}
-					/>
+					{placement === 'selects' && error !== null && (
+						<p className={styles.fieldError} role="alert">
+							{t(error.key, error.params)}
+						</p>
+					)}
+					{placement === 'form' && error !== null && (
+						<p className={styles.fieldError} role="alert">
+							{t(error.key, error.params)}
+						</p>
+					)}
 				</div>
-				{placement === 'selects' && error !== null && (
-					<p className={styles.fieldError} role="alert">
-						{t(error.key, error.params)}
-					</p>
-				)}
-				{placement === 'form' && error !== null && (
-					<p className={styles.fieldError} role="alert">
-						{t(error.key, error.params)}
-					</p>
-				)}
 				<button
 					className={styles.button}
 					type="submit"

@@ -226,3 +226,13 @@ Record template:
 **My intervention:** The dead-section removal was my call; the mouse-bug diagnosis and fix were the AI's, prompted by its own failing test.
 
 **Lesson:** A UX decision ("default 0, replaced on focus") is not implemented until it survives a MOUSE — keyboard-only reasoning ships keyboard-only behavior. And documents accrete: a periodic "why is this paragraph here" prunes what reviews added in better times.
+
+## [2026-06-12 15:58] — v0.10.0: the production sweep found what no test could
+
+**Context:** The first 0.10.0 production deploy. The Router answered every curl perfectly — and the browser showed "Failed to load application".
+
+**What happened:** (1) The bundle, not the server: my local `web/.env` (the `VITE_API_URL=http://localhost:3000` from the 0.9.0 local testing) got BAKED into the production build — the SST StaticSite build runs on the deploy machine, in `web/`, where the file exists. The 0.9.0 review pinned `?? ''` for the CI world (no env at all) but missed the THIRD world: the developer's deploy machine, where the env EXISTS with the wrong value. curl could never catch it — it tests the server, the bug lived in the shipped JavaScript. The fix pins the value in the IaC: the StaticSite `environment: { VITE_API_URL: '' }` — Vite gives process env precedence over `.env` files, so the deploy config now wins regardless of any machine state. (2) I then caught two design regressions on the live site: the Convert button rendered INSIDE the purple card (Figma places it below — the export said so all along: button top 445, card bottom 413) and the language changer ignored the intended pill style. I dropped two reference snapshots into `docs/figma/` and the AI restructured the form (a transparent form wrapper, the card and the button as siblings) and restyled the changer (the active pill in brand purple, the inactive ones white with the grey border) — all 41 tests stayed green through the restructure, the placement assertions included.
+
+**My intervention:** The browser test and both visual catches were mine — plus a third: the mobile title ran edge to edge, fixed with the page-side padding mirroring the Figma mobile frame margins. The env-precedence diagnosis and the IaC pin were the AI's.
+
+**Lesson:** There are THREE env worlds — CI (no env), local dev (env wanted), and the deploy machine (env present and WRONG for the target) — and a build-time variable must be pinned where the build is DEFINED, not where it runs. And no amount of curl replaces one human looking at the rendered page.

@@ -3,24 +3,28 @@
 .changer {
 	display: flex;
 	justify-content: center;
-	gap: 12px;
+	gap: 8px;
 }
 
+// the pill style per the docs/figma snapshot (2026-06-12): the inactive codes are white
+// pills with the grey border, the ACTIVE one is the brand purple with white text
 .option,
 .active {
-	padding: 4px 8px;
-	font: t.$font-field;
+	padding: 10px 14px;
+	font: t.$font-label;
 	letter-spacing: t.$letter-spacing-label;
-	color: t.$color-text-muted;
-	background: none;
-	border: none;
-	border-radius: t.$select-radius;
+	border-radius: t.$button-radius;
 	cursor: pointer;
 }
 
-.active {
-	color: t.$color-field-text;
-	font-weight: 500;
+.option {
+	color: t.$color-text-muted;
 	background: t.$color-field-bg;
 	border: 1px solid t.$color-field-border;
+}
+
+.active {
+	color: t.$color-field-bg;
+	background: t.$color-card-bg;
+	border: 1px solid t.$color-card-bg;
 }

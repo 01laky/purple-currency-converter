@@ -8,11 +8,19 @@
 	gap: t.$button-gap-top;
 }
 
-.card {
+// the transparent wrapper — the button sits BELOW the purple card per Figma
+.form {
 	display: flex;
 	flex-direction: column;
 	align-items: center;
 	gap: t.$button-gap-top;
+}
+
+.card {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: t.$field-gap-mobile;
 	width: t.$card-width-web;
 	padding: t.$card-padding-web;
 	background: t.$color-card-bg;

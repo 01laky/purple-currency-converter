@@ -4,6 +4,16 @@ All notable changes to this project are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html). Every entry carries the datetime the version was closed — together with the AI_DIARY.md datetimes it is the source of the submission time budget (rule 14).
 
+## [0.7.0] — 2026-06-12 13:21
+
+### Added
+
+- **The SST v4 infrastructure (`deploy/`)** — its own npm project with the single `sst` dependency (the no-sharing principle); `sst.config.ts` with the per-stage DynamoDB table (dev conversions never pollute production), the `OerApiKey` secret (the key lives in SST secrets, never in the repo) and the Function with `url: true` and `link` (IAM least privilege — exactly its one table); the region eu-central-1.
+- **The Lambda parameters as documented decisions** — `nodejs22.x` (matches the pinned local Node), 512 MB (CPU scales with memory), a 10-second timeout (above the 5-second OER fetch budget — a slow OER ends as a controlled stale/502, never a Lambda kill), the concurrency cap of 10 via the account-level quota; every value carries its why-comment in the config.
+- **The Lambda adapter (`src/lambda.ts`)** — the §2 twin of `server.ts`: `@fastify/aws-lambda` around `buildApp()`, nothing else; the app stays blind to its hosting (configuration exclusively from env vars, `DYNAMO_ENDPOINT` unset = the AWS mode).
+- **The §8 esbuild traps solved** — the Swagger UI assets ship via `copyFiles` from the ROOT `node_modules` (the `../` crosses the deploy/ module boundary) and `resolveSwaggerStaticDir()` hands the plugin an explicit `baseDir` on Lambda (the ESM pattern: `import.meta.url` + `fileURLToPath` — no `__dirname`, no `cwd()`); the i18n JSONs were statically imported since v0.2.0.
+- **Tests** — 4 new (99 total): both branches of the swagger resolver (the module-relative path, the injectable check) and the offline Lambda smoke test through a **Function URL payload-format-2.0 fixture** (`url: true` never sends the API GW v1 shape) — `/health` 200 with the §3 shape and the unified 404 through the adapter.
+
 ## [0.6.0] — 2026-06-12 13:02
 
 ### Added
@@ -89,6 +99,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 - **AI collaboration diary (`AI_DIARY.md`)** — created on day one, with the record template in the file header.
 - **Repo hygiene (`.gitignore`)** — secrets (`.env*` except `.env.example`), local AI permissions (`.claude/settings.local.json`), dependencies and build outputs.
 
+[0.7.0]: https://github.com/01laky/purple-currency-converter/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/01laky/purple-currency-converter/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/01laky/purple-currency-converter/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/01laky/purple-currency-converter/compare/v0.3.0...v0.4.0

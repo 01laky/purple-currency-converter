@@ -19,6 +19,7 @@ import { LANGUAGES } from './i18n/constants.js';
 import { TRANSLATIONS, formatEnglishMessage } from './i18n/loader.js';
 import { CURRENCIES_CACHE_CONTROL } from './lib/constants.js';
 import { EnvVar, ErrorCode, ErrorKey } from './lib/enums.js';
+import { resolveSwaggerStaticDir } from './lib/swagger.js';
 import type { ApiErrorBody, BuildAppDeps, ErrorParams } from './lib/types.js';
 import { RateProviderUnavailableError } from './rates/errors.js';
 import { createRatesProvider } from './rates/provider.js';
@@ -350,7 +351,7 @@ export const buildApp = async (deps?: BuildAppDeps): Promise<FastifyInstance> =>
 		},
 		transform: jsonSchemaTransform,
 	});
-	await app.register(swaggerUi, { routePrefix: '/docs' });
+	await app.register(swaggerUi, { routePrefix: '/docs', baseDir: resolveSwaggerStaticDir() });
 
 	app.addHook('onRequest', setRequestIdHeader);
 	app.addHook('onResponse', logRequestCompletion);

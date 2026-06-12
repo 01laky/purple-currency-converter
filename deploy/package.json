@@ -1,0 +1,11 @@
+{
+	"name": "purple-currency-converter-deploy",
+	"private": true,
+	"type": "module",
+	"engines": {
+		"node": ">=22"
+	},
+	"devDependencies": {
+		"sst": "^4.15.2"
+	}
+}

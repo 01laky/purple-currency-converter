@@ -1,0 +1,86 @@
+@use '../../../styles/tokens' as t;
+@use '../../../styles/mixins' as m;
+
+.converter {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: t.$button-gap-top;
+}
+
+.card {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: t.$button-gap-top;
+	width: t.$card-width-web;
+	padding: t.$card-padding-web;
+	background: t.$color-card-bg;
+	border-radius: t.$card-radius;
+	box-shadow: t.$card-shadow;
+
+	@include m.mobile {
+		width: t.$card-width-mobile;
+		max-width: calc(100vw - 34px);
+		padding: t.$card-padding-mobile;
+	}
+}
+
+.fields {
+	display: grid;
+	grid-template-columns: repeat(3, t.$field-width-web);
+	gap: t.$field-gap-web;
+	width: 100%;
+	justify-content: center;
+
+	@include m.mobile {
+		grid-template-columns: 1fr;
+		gap: t.$field-gap-mobile;
+	}
+}
+
+.field {
+	display: flex;
+	flex-direction: column;
+	gap: t.$label-gap;
+}
+
+.label {
+	font: t.$font-label;
+	letter-spacing: t.$letter-spacing-label;
+	color: t.$color-field-bg;
+}
+
+.input {
+	height: t.$field-height;
+	padding: 0 t.$field-padding-x;
+	font: t.$font-field;
+	letter-spacing: t.$letter-spacing-label;
+	color: t.$color-field-text;
+	background: t.$color-field-bg;
+	border: 1px solid t.$color-field-border;
+	border-radius: t.$input-radius;
+}
+
+.button {
+	height: t.$button-height;
+	padding: 0 t.$button-padding-x;
+	font: t.$font-label;
+	color: t.$color-field-bg;
+	background: t.$color-button-bg;
+	border: none;
+	border-radius: t.$button-radius;
+	filter: t.$button-shadow;
+	cursor: pointer;
+
+	&:disabled {
+		opacity: 0.6;
+		cursor: not-allowed;
+	}
+}
+
+.error {
+	margin: 0;
+	font: t.$font-result-label;
+	color: t.$color-card-bg;
+}

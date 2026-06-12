@@ -1,0 +1,19 @@
+@use './tokens' as t;
+
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+}
+
+body {
+	margin: 0;
+	background: t.$color-page-bg;
+	font: t.$font-field;
+	color: t.$color-field-text;
+}
+
+button,
+input {
+	font-family: t.$font-family;
+}

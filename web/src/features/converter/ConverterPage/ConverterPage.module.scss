@@ -1,0 +1,23 @@
+@use '../../../styles/tokens' as t;
+@use '../../../styles/mixins' as m;
+
+.page {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: t.$heading-gap;
+	min-height: 100vh;
+	padding-top: t.$heading-top-web;
+	padding-bottom: t.$result-padding;
+
+	@include m.mobile {
+		padding-top: t.$heading-top-mobile;
+	}
+}
+
+.heading {
+	margin: 0;
+	font: t.$font-h1;
+	color: t.$color-heading;
+	text-align: center;
+}

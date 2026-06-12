@@ -1,0 +1,22 @@
+@use './styles/tokens' as t;
+
+.center {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: t.$result-gap;
+	min-height: 100vh;
+}
+
+.retry {
+	height: t.$button-height;
+	padding: 0 t.$button-padding-x;
+	font: t.$font-label;
+	color: t.$color-field-bg;
+	background: t.$color-button-bg;
+	border: none;
+	border-radius: t.$button-radius;
+	filter: t.$button-shadow;
+	cursor: pointer;
+}

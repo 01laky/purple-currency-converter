@@ -1,6 +1,6 @@
 # Purple currency converter
 
-![Version](https://img.shields.io/badge/version-0.9.0-blue)
+![Version](https://img.shields.io/badge/version-0.10.0-blue)
 ![Node](https://img.shields.io/badge/node-%E2%89%A522-339933?logo=node.js&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white)
 [![CI](https://github.com/01laky/purple-currency-converter/actions/workflows/ci.yml/badge.svg)](https://github.com/01laky/purple-currency-converter/actions/workflows/ci.yml)
@@ -34,7 +34,7 @@ Design notes and conscious trade-offs:
 
 ## API reference
 
-**Live URL (production):** <https://m5hxzqekb4av5lk2slzqxen47i0ixdfn.lambda-url.eu-central-1.on.aws> — try [`/health`](https://m5hxzqekb4av5lk2slzqxen47i0ixdfn.lambda-url.eu-central-1.on.aws/health) or the interactive [`/docs`](https://m5hxzqekb4av5lk2slzqxen47i0ixdfn.lambda-url.eu-central-1.on.aws/docs)
+**Live (production, one origin):** <https://d39k5qe4ticled.cloudfront.net> — **the app**, with the API same-origin under [`/api/*`](https://d39k5qe4ticled.cloudfront.net/api/stats), the diagnostics at [`/health`](https://d39k5qe4ticled.cloudfront.net/health) and the interactive [`/docs`](https://d39k5qe4ticled.cloudfront.net/docs)
 
 Interactive documentation: **`GET /docs`** (Swagger UI, available in production too); the raw OpenAPI document at `/docs/json`; the committed contract artifact in [`api/openapi.json`](api/openapi.json).
 
@@ -163,7 +163,7 @@ The frontend has its own [`web/.env.example`](web/.env.example): `VITE_API_URL` 
 | 0.7.0        | SST v4 (IaC) and the Lambda adapter                 | ✅     |
 | 0.8.0        | the production deploy and the live URL              | ✅     |
 | 0.9.0        | the frontend base — the monorepo, the Figma tokens, the generated client, the converter | ✅ |
-| 0.10.0       | the frontend completion + the same-origin deploy (Level 2) | ⏳ |
+| 0.10.0       | the frontend completion + the same-origin deploy (Level 2) | ✅ |
 | 0.11.0       | hardening (the rate limit, edge cases)              | ⏳     |
 | 1.0.0        | the submission (the future vision, the time budget) | ⏳     |
 

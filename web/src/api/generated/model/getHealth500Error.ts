@@ -3,7 +3,7 @@
  * Do not edit manually.
  * Currency Conversion API
  * Currency conversion with live exchange rates — Purple LAB case study.
- * OpenAPI spec version: 0.9.0
+ * OpenAPI spec version: 0.10.0
  */
 import type { GetHealth500ErrorCode } from './getHealth500ErrorCode';
 import type { GetHealth500ErrorParams } from './getHealth500ErrorParams';

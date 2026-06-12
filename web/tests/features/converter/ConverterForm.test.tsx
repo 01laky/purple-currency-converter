@@ -10,6 +10,13 @@ vi.mock('../../../src/api/generated/client', () => ({
 	getApiInit: vi.fn(),
 	getApiCurrencies: vi.fn(),
 	postApiConvert: vi.fn(),
+	// the ResultCard renders the statistics rows since 0.10.0 — the form tests pass no stats
+	// (the optional prop), but the mock must exist for the shared module
+	getApiStats: vi.fn(async () => ({
+		totalConversions: 0,
+		totalAmountEur: 0,
+		topTargetCurrency: null,
+	})),
 }));
 
 import { postApiConvert } from '../../../src/api/generated/client';
@@ -105,7 +112,9 @@ describe('the conversion form', () => {
 		renderForm();
 
 		expect(screen.getByText('Result')).toBeDefined();
-		expect(screen.getByText('—')).toBeDefined();
+		// CHANGED at v0.10.0 (the rule-29 carve-out): the §10 statistics rows legitimately
+		// render their own dashes — the reserved-space intent now asserts presence, not uniqueness
+		expect(screen.getAllByText('—').length).toBeGreaterThan(0);
 	});
 });
 

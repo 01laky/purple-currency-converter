@@ -18,7 +18,11 @@ import { convertAmount } from './conversion/service.js';
 import type { ConvertResult } from './conversion/types.js';
 import { LANGUAGES } from './i18n/constants.js';
 import { TRANSLATIONS, formatEnglishMessage } from './i18n/loader.js';
-import { CURRENCIES_CACHE_CONTROL, DEFAULT_FRONTEND_ORIGIN } from './lib/constants.js';
+import {
+	CURRENCIES_CACHE_CONTROL,
+	DEFAULT_FRONTEND_ORIGIN,
+	NO_STORE_CACHE_CONTROL,
+} from './lib/constants.js';
 import { EnvVar, ErrorCode, ErrorKey } from './lib/enums.js';
 import { resolveSwaggerStaticDir } from './lib/swagger.js';
 import type { ApiErrorBody, BuildAppDeps, ErrorParams } from './lib/types.js';
@@ -212,14 +216,20 @@ const errorHandler = async (
  *
  * @param {RatesProvider} ratesProvider the provider whose cache age is reported
  *
- * @returns {() => HealthResponse} the route handler
+ * @returns {(request: FastifyRequest, reply: FastifyReply) => HealthResponse} the route handler
  */
-const createHealthHandler = (ratesProvider: RatesProvider) => (): HealthResponse => ({
-	ok: true,
-	version: pkg.version,
-	uptime: Math.round(process.uptime()),
-	ratesCacheAge: ratesProvider.getCacheAgeSeconds(),
-});
+const createHealthHandler =
+	(ratesProvider: RatesProvider) =>
+	(_request: FastifyRequest, reply: FastifyReply): HealthResponse => {
+		// no-store (§3 revised at 0.10.0) — cached diagnostics lie behind CloudFront
+		void reply.header('cache-control', NO_STORE_CACHE_CONTROL);
+		return {
+			ok: true,
+			version: pkg.version,
+			uptime: Math.round(process.uptime()),
+			ratesCacheAge: ratesProvider.getCacheAgeSeconds(),
+		};
+	};
 
 /**
  * @name createCurrenciesHandler
@@ -284,10 +294,16 @@ const createConvertHandler =
  *
  * @param {StatsRepository} statsRepository the repository serving the totals
  *
- * @returns {() => Promise<StatsResponse>} the route handler
+ * @returns {(request: FastifyRequest, reply: FastifyReply) => Promise<StatsResponse>} the route handler
  */
-const createStatsHandler = (statsRepository: StatsRepository) => (): Promise<StatsResponse> =>
-	statsRepository.getStats();
+const createStatsHandler =
+	(statsRepository: StatsRepository) =>
+	(_request: FastifyRequest, reply: FastifyReply): Promise<StatsResponse> => {
+		// the §3 always-fresh guarantee, made EXPLICIT (revised at 0.10.0): behind the Router a
+		// missing Cache-Control is a vacuum CloudFront may fill — no-store defends regardless
+		void reply.header('cache-control', NO_STORE_CACHE_CONTROL);
+		return statsRepository.getStats();
+	};
 
 /**
  * @name initHandler

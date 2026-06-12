@@ -10,7 +10,7 @@ export type BootState =
 	| { status: 'loading' }
 	| { status: 'init-failed' }
 	| { status: 'currencies-failed' }
-	| { status: 'ready'; currencies: GetApiCurrencies200Currencies };
+	| { status: 'ready'; currencies: GetApiCurrencies200Currencies; languages: string[] };
 
 export type BootContextValue = {
 	state: BootState;
@@ -52,11 +52,13 @@ export const useBoot = (): BootContextValue => {
 export const BootProvider = ({ children }: { children: ReactNode }) => {
 	const [state, setState] = useState<BootState>({ status: 'loading' });
 	const i18nStarted = useRef(false);
+	// the server language list (§3 — nothing hardcoded) survives the currencies retries
+	const serverLanguages = useRef<string[]>([]);
 
 	const loadCurrencies = useCallback(async (): Promise<void> => {
 		try {
 			const { currencies } = await getApiCurrencies();
-			setState({ status: 'ready', currencies });
+			setState({ status: 'ready', currencies, languages: serverLanguages.current });
 		} catch {
 			// handled by the state transition — the UI offers the retry (§10)
 			setState({ status: 'currencies-failed' });
@@ -76,6 +78,7 @@ export const BootProvider = ({ children }: { children: ReactNode }) => {
 				if (!i18nStarted.current) {
 					i18nStarted.current = true;
 					const init = await getApiInit();
+					serverLanguages.current = init.languages;
 					const language = resolveLanguage(
 						localStorage.getItem(LANGUAGE_STORAGE_KEY),
 						navigator.languages,

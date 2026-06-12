@@ -124,7 +124,7 @@ No path versioning (no `/api/v1`): the API has a single consumer, the contract i
 ```
 
 - **The backend is the single source of all texts** — `api/src/i18n/{en,cs,sk}.json` contain the backend error messages as well as the frontend UI texts. The frontend downloads them at app boot through the generated client (the endpoint is part of the OpenAPI contract). Translations are data flowing through the contract — the no-code-sharing principle (§2) is untouched.
-- **The key catalog is fixed and the keys are camelCase paths (not error codes):** `errors.{notFound, internal, rateProvider, rateLimited, unsupportedCurrency}`, `errors.validation.{invalidRequest, amountNotPositive, amountTooLarge, amountTooManyDecimals, invalidCurrencyCode, sameCurrency}`, `ui.{title, amountToConvert, from, to, convertCurrency, result, numberOfCalculations, topTargetCurrency, totalAmountEur, retry}` (`retry` added at 0.9.0 — §10 demands a retry option on a currencies failure and the catalog lacked its label); interpolation through the `{{param}}` placeholder.
+- **The key catalog is fixed and the keys are camelCase paths (not error codes):** `errors.{notFound, internal, rateProvider, rateLimited, unsupportedCurrency, network}` (`network` added at 0.10.0 — the frontend's synthetic transport error deserves an honest text instead of blaming the server via `internal`), `errors.validation.{invalidRequest, amountNotPositive, amountTooLarge, amountTooManyDecimals, invalidCurrencyCode, sameCurrency}`, `ui.{title, amountToConvert, from, to, convertCurrency, result, numberOfCalculations, topTargetCurrency, totalAmountEur, retry}` (`retry` added at 0.9.0 — §10 demands a retry option on a currencies failure and the catalog lacked its label); interpolation through the `{{param}}` placeholder.
 - **Three languages: EN, CS, SK** — codes per ISO 639-1 (Czech = `cs`). The endpoint returns all languages at once: the texts are small (a few KB), one ETag, and switching the language on the frontend is instant without another request. The language list is sent by the backend — the frontend hardcodes nothing.
 - **Revalidation via HTTP ETag (conditional requests):** the response carries an `ETag` (a hash of the JSON, computed once at process start) + `Cache-Control: no-cache`. On the next load the browser automatically sends `If-None-Match` and the backend replies `304 Not Modified` with an empty body when the texts have not changed. Standard HTTP behavior — no manual hash endpoint and no custom cache logic.
 - **Fallback:** if `/api/init` fails, the frontend shows a single hardcoded message ("Failed to load application"). A bundled backup copy of the translations does not exist — it would double the maintenance and defeat the single-source principle.
@@ -137,7 +137,7 @@ No path versioning (no `/api/v1`): the API has a single consumer, the contract i
 { "totalConversions": 42, "totalAmountEur": 12345.67, "topTargetCurrency": "EUR" }
 ```
 
-Statistics are **never cached anywhere** (no HTTP cache headers) — they are always fresh.
+Statistics are **never cached anywhere** — they are always fresh. The response actively sends **`Cache-Control: no-store`** (revised at 0.10.0: behind the Router a MISSING header is an instruction vacuum CloudFront may fill with its default TTL — the original "no HTTP cache headers" protected freshness only at the direct Function URL). `/health` sends `no-store` for the same reason: cached diagnostics lie.
 
 ### `GET /health`
 
@@ -280,10 +280,6 @@ Frontend tests never call the real API — the generated axios client is mocked;
 - Security headers via `@fastify/helmet`
 - Fastify defaults — a 1 MB body limit, strict JSON parsing
 
-### Authentication: none
-
-A public converter with no user data and no PII — authentication is not introduced and is not planned even as a future step.
-
 ### Rate limiting (implemented in the hardening version)
 
 - `@fastify/rate-limit` — a per-IP limit (baseline: 60 req/min on `/api/convert`), the 429 response in the unified error model. It protects the statistics from pollution and dampens abuse. It keys on the client IP from `x-forwarded-for` (Fastify `trustProxy`) — production sits behind CloudFront and the socket address is a changing edge; a caller hitting the Function URL directly could spoof the header, which is accepted (the public entry point is CloudFront).
@@ -314,7 +310,7 @@ Figma "Purple case" → the Main page contains the Web and Mobile variant of the
 - **The remaining two statistics from the assignment** (the top target currency, the total amount in EUR — the design shows only the count): additional rows of the same Result card in the identical "label + value" style. The smallest possible intervention, no new components.
 - **The open state of the selects:** with ~170 currencies it behaves as a filterable list (specification below); the closed state is pixel-perfect per Figma.
 - **Loading/error states:** derived from the design system — a spinner in the button, errors next to the fields, a banner.
-- **A language changer:** an EN/CS/SK switch (the texts arrive multilingual from `/api/init`); a discreet placement in the page corner, the visual derived from the design system.
+- **A language changer:** an EN/CS/SK switch (the texts arrive multilingual from `/api/init`); **centered ABOVE the title with its own spacing, on both breakpoints** (revised at 0.10.0 — the original corner placement collided with the title on mobile), the visual derived from the design system.
 
 ### Layout and behavior
 
@@ -325,7 +321,7 @@ Figma "Purple case" → the Main page contains the Web and Mobile variant of the
 - **App boot:** a full-page spinner until `GET /api/init` (the texts) and `GET /api/currencies` (the currencies) complete — without them the app does not render. An init failure → the fallback message (§3); a currencies failure → an error state with a retry option.
 - **States during use:** loading = the disabled Convert button with an inline spinner (no skeletons — the design does not need them); errors mapped onto the error model (`VALIDATION_ERROR` at the field, `UNSUPPORTED_CURRENCY` at the select, `RATE_PROVIDER_ERROR` as a banner); the statistics empty state at 0 conversions. Stale rates are not shown in the UI (the design has no such element) — `rateTimestamp` stays only in the API response.
 - **No layout shift:** the space for the result and the statistics is reserved (CLS ≈ 0).
-- **Input UX:** autofocus on amount, Enter submits, Convert is disabled with an invalid form and during the request (double-submit prevention — a complement of the "the frontend never retries a POST" rule, §6).
+- **Input UX:** autofocus on amount, Enter submits, Convert is disabled with an invalid form and during the request (double-submit prevention — a complement of the "the frontend never retries a POST" rule, §6). **Defaults (revised at 0.10.0):** the amount pre-fills with `0`, From with `EUR`, To with `CZK` unless the user chooses otherwise; the pristine `0` is NOT submittable (the contract requires a positive amount — Convert stays disabled until a positive value) and is fully selected on focus so the first keystroke replaces it.
 - **The currency selects — a binding specification:** typing filters the list, the ↑/↓ arrows navigate, Enter selects, Esc closes, an outside click closes; fully operable by mouse and keyboard; the value = the code + the currency name. **The same currency cannot be chosen on both sides** — the target select excludes the chosen source currency (and vice versa); the backend validates it anyway (§3) — defense in depth.
 - **The statistics** load at boot and refresh after every successful conversion — the user sees the persistence live.
 - **Accessibility baseline:** semantic HTML (form/label/button), `aria-live` on the result and the error messages, visible focus, contrast per Figma, correct ARIA roles of the selects.
@@ -440,13 +436,3 @@ Every version of the roadmap from v0.1.0 onward has a prompt in [`/prompt`](../p
 | **1.0.0**  | Submission finalization: the AI diary complete, the future vision (the README-top section — §12), the time budget (summed from the changelog/diary datetimes), the final README                                                                                                                                                                              | submission                         |
 
 Milestones: **0.8.0 = a submittable Level 1** (if time ran out, this is where to cut), **1.0.0 = the full Level 2 submission**.
-
-## 15. Out of scope (consciously)
-
-Multi-region, CD (automatic deploys from CI), API Gateway throttling/WAF — the README mentions them as "next steps", they are not implemented. Authentication is not a "next step" — it will not exist at all (§9). Rate limiting IS in scope (§9, the hardening version). CI (typecheck + lint + tests on push/PR) IS in scope from v0.1.0.
-
-## Backlog
-
-Everything that appears during the work and is not in the scope of any version is recorded here (rule 25). The items are planned only after v1.0.0.
-
-- A conversion event log (history, not just aggregates) — if the statistics were to grow into charts/time series (§6)

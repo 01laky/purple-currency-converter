@@ -55,6 +55,33 @@ export default $config({
 			],
 		});
 
-		return { api: api.url };
+		// The same-origin production (§10 revised): ONE CloudFront domain — /api, /docs and
+		// /health go to the Lambda Function URL (a prefix matches whole path segments; no
+		// rewrite, the Lambda routes carry their prefixes), everything else is the StaticSite.
+		// No CORS exists in production; VITE_API_URL stays EMPTY in the build — the web calls
+		// relative paths through this router.
+		const router = new sst.aws.Router('Edge');
+		router.route('/api', api.url);
+		router.route('/docs', api.url);
+		router.route('/health', api.url);
+
+		const web = new sst.aws.StaticSite('Web', {
+			path: '../web',
+			build: {
+				command: 'npm run build',
+				output: 'dist',
+			},
+			// PIN the production value at build time: a developer's local web/.env (the local
+			// VITE_API_URL=http://localhost:3000) would otherwise get baked into the production
+			// bundle — Vite gives process env vars precedence over .env files, so this empty
+			// string (= the same-origin relative calls) wins regardless of the machine state.
+			// Found live at the first 0.10.0 deploy: the app called localhost from CloudFront.
+			environment: {
+				VITE_API_URL: '',
+			},
+			router: { instance: router },
+		});
+
+		return { url: router.url, api: api.url, web: web.url };
 	},
 });

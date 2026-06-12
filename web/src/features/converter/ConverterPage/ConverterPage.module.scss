@@ -12,11 +12,18 @@
 
 	@include m.mobile {
 		padding-top: t.$heading-top-mobile;
+		// ONE shared gutter for everything (the human's report: the title must keep the same
+		// side spacing the purple card has) — 17px = the card's former 34px/2 inset
+		padding-left: 17px;
+		padding-right: 17px;
 	}
 }
 
 .heading {
 	margin: 0;
+	// span the available width — centering must not rely on the intrinsic size (the 0.9.0
+	// defect: the H1 left-aligned on non-desktop viewports; §10 always said centered)
+	width: 100%;
 	font: t.$font-h1;
 	color: t.$color-heading;
 	text-align: center;

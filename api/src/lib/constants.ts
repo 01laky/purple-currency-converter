@@ -17,5 +17,10 @@ export const DEFAULT_FRONTEND_ORIGIN = 'http://localhost:5173';
 // /api/currencies HTTP cache (§3) — the browser/CDN side; the server side is the provider cache
 export const CURRENCIES_CACHE_CONTROL = 'public, max-age=3600';
 
+// /api/stats and /health (§3, revised at 0.10.0): behind the Router a MISSING Cache-Control
+// is a vacuum CloudFront may fill with its default TTL — the explicit no-store defends
+// regardless of the cache policy; cached statistics/diagnostics lie
+export const NO_STORE_CACHE_CONTROL = 'no-store';
+
 // §3: above ~2^53 JS numbers and cent arithmetic lose precision
 export const MAX_AMOUNT = 1e12;

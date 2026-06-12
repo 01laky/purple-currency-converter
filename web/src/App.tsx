@@ -53,7 +53,7 @@ const AppContent = () => {
 		case 'currencies-failed':
 			return <CurrenciesFailed />;
 		case 'ready':
-			return <ConverterPage currencies={state.currencies} />;
+			return <ConverterPage currencies={state.currencies} languages={state.languages} />;
 	}
 };
 

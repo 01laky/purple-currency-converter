@@ -3,7 +3,7 @@
 	"info": {
 		"title": "Currency Conversion API",
 		"description": "Currency conversion with live exchange rates — Purple LAB case study.",
-		"version": "0.5.0"
+		"version": "0.6.0"
 	},
 	"components": {
 		"schemas": {}
@@ -543,6 +543,111 @@
 						}
 					},
 					"502": {
+						"description": "Default Response",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"error": {
+											"type": "object",
+											"properties": {
+												"code": {
+													"type": "string",
+													"enum": [
+														"VALIDATION_ERROR",
+														"NOT_FOUND",
+														"INTERNAL_ERROR",
+														"RATE_PROVIDER_ERROR",
+														"UNSUPPORTED_CURRENCY"
+													],
+													"description": "Programmatic error code"
+												},
+												"key": {
+													"type": "string",
+													"description": "i18n key for the frontend (translations arrive via GET /api/init in v0.2.0)"
+												},
+												"message": {
+													"type": "string",
+													"description": "Human-readable message, always in English"
+												},
+												"params": {
+													"description": "Interpolation values for the i18n key",
+													"type": "object",
+													"additionalProperties": {
+														"anyOf": [
+															{
+																"type": "string"
+															},
+															{
+																"type": "number"
+															}
+														]
+													}
+												}
+											},
+											"required": [
+												"code",
+												"key",
+												"message"
+											],
+											"additionalProperties": false
+										}
+									},
+									"required": [
+										"error"
+									],
+									"additionalProperties": false
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/stats": {
+			"get": {
+				"summary": "Conversion statistics",
+				"tags": [
+					"statistics"
+				],
+				"description": "The persistent totals: the number of conversions, the total amount converted to EUR at write time, and the most frequent target currency (ties resolve to the alphabetically first code; null before the first conversion). Never cached — the response is always fresh.",
+				"responses": {
+					"200": {
+						"description": "Default Response",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"totalConversions": {
+											"type": "integer",
+											"minimum": 0,
+											"maximum": 9007199254740991,
+											"description": "Total number of conversions ever made — an integer counter"
+										},
+										"totalAmountEur": {
+											"type": "number",
+											"minimum": 0,
+											"description": "Total of all conversions converted to EUR at write time (integer cents / 100)"
+										},
+										"topTargetCurrency": {
+											"nullable": true,
+											"description": "The most frequent target currency; ties resolve to the alphabetically first code; null when no conversion was made yet",
+											"type": "string"
+										}
+									},
+									"required": [
+										"totalConversions",
+										"totalAmountEur",
+										"topTargetCurrency"
+									],
+									"additionalProperties": false
+								}
+							}
+						}
+					},
+					"500": {
 						"description": "Default Response",
 						"content": {
 							"application/json": {

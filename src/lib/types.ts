@@ -1,10 +1,12 @@
 import type { RatesProvider } from '../rates/types.js';
+import type { StatsRepository } from '../stats/types.js';
 import type { ErrorCode } from './enums.js';
 
 export type ErrorParams = Record<string, string | number>;
 
 export type BuildAppDeps = {
 	ratesProvider?: RatesProvider;
+	statsRepository?: StatsRepository;
 };
 
 export type ApiErrorBody = {

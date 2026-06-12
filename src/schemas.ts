@@ -107,7 +107,27 @@ export const convertResponseSchema = z.object({
 		),
 });
 
+export const statsResponseSchema = z.object({
+	totalConversions: z
+		.number()
+		.int()
+		.nonnegative()
+		.describe('Total number of conversions ever made — an integer counter'),
+	totalAmountEur: z
+		.number()
+		.nonnegative()
+		.describe('Total of all conversions converted to EUR at write time (integer cents / 100)'),
+	topTargetCurrency: z
+		.string()
+		.nullable()
+		.describe(
+			'The most frequent target currency; ties resolve to the alphabetically first code; null when no conversion was made yet',
+		),
+});
+
 export type HealthResponse = z.infer<typeof healthResponseSchema>;
+
+export type StatsResponse = z.infer<typeof statsResponseSchema>;
 
 export type ConvertRequest = z.infer<typeof convertRequestSchema>;
 

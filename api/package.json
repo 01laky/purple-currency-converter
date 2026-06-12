@@ -1,6 +1,6 @@
 {
 	"name": "purple-currency-converter",
-	"version": "0.11.0",
+	"version": "1.0.0",
 	"private": true,
 	"description": "Currency conversion API with live exchange rates — Purple LAB case study",
 	"type": "module",

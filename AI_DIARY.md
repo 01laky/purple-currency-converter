@@ -258,3 +258,13 @@ The visual round-trips continued after the fix: the shared mobile gutter took TW
 **My intervention:** The "fix everything" pick was the human's single decision over the presented findings; the trustProxy refutation and the throw-vs-send discovery were the tests' work, not anyone's judgment.
 
 **Lesson:** A security parameter pinned by reasoning is a hypothesis until a test tries to break it — the off-by-one survived two careful humans and fell to one adversarial assertion. And "no silent errors" is audited by grepping for catch blocks, not by remembering them: the one absorbing catch was the one everyone agreed was "by design".
+
+## [2026-06-12 17:28] — v1.0.0: the submission — the human's words, not the AI's draft
+
+**Context:** The final version — the future vision, the time budget, the license decision and the closing polish.
+
+**What happened:** Two corrections worth recording, both mine over the AI's proposals. (1) The AI drafted a polished future-vision paragraph — well written and faithful in spirit, but MORE than I said. I rejected it: the assignment grades MY reflection, and the diary is proof the words existed before the AI embellished them. The AI then placed the §12 core and I tightened it once more by hand — the published text is one sentence, my original day-one answer, shorter even than the §12 paraphrase. (2) The time-budget table: the AI's mechanical clustering was honest about its blind spot — a lone 11:03 close marker counted as zero — and I filled it from memory with the real 1 h 10 min of that session, plus the 3 hours of proposal writing that preceded every recorded datetime. The method note in the README stays: the datetimes are the backbone, the two human corrections are visible rows, the total is ≈ 11 hours. The license question deferred at v0.8.0 got its answer: all rights reserved — the case study is published for evaluation, not for reuse. The diary itself passed the rule-21 audit (zero Slovak characters, all 23 records template-complete) before this closing record became the 24th.
+
+**My intervention:** Both decisions — the hand-tightened future vision and the corrected budget — plus the license call. The AI's role in this version was deliberately mechanical: extract, cluster, audit, sync the artifacts.
+
+**Lesson:** The closing version is where governance pays out or collapses: because the vision was written down on day one and the datetimes were collected from the first commit, the submission deliverables were assembly, not invention. The AI's instinct is always to write MORE — the discipline of "use my recorded words" is the human's to enforce, and a diary that recorded the original decision is what makes enforcing it trivial.

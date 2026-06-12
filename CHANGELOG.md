@@ -4,6 +4,19 @@ All notable changes to this project are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html). Every entry carries the datetime the version was closed — together with the AI_DIARY.md datetimes it is the source of the submission time budget (rule 14).
 
+## [0.2.0] — 2026-06-12 05:44
+
+### Added
+
+- **i18n module (`src/i18n/`)** — EN/CS/SK translation files with the complete fixed key catalog (the backend errors including codes arriving in later versions, plus the frontend UI texts per Figma); statically imported (the future Lambda bundle has no files on disk).
+- **`GET /api/init`** — the languages and all the translation trees at once; a strong SHA-256 ETag computed once per process, `Cache-Control: no-cache`, a matching `If-None-Match` gets `304 Not Modified` with an empty body.
+- **No-fallback policy** — a missing translation or interpolation param fails immediately; it never resolves to the key itself, English, an empty string or a placeholder.
+- **Tests** — 15 new (23 total): translation parity (missing AND extra keys, non-empty leaves, `{{param}}` placeholder parity across languages, every `ErrorKey` present), `formatEnglishMessage` behavior including all the throwing branches, the `/api/init` shape, the ETag stability, the 304/200 revalidation branches and the OpenAPI presence.
+
+### Changed
+
+- **The error `message` source** — the central error handler now builds messages from the EN translations via `formatEnglishMessage` (with `{{param}}` interpolation); the temporary `ENGLISH_MESSAGES` constants from v0.1.0 are removed.
+
 ## [0.1.0] — 2026-06-12 05:15
 
 ### Added
@@ -30,5 +43,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 - **AI collaboration diary (`AI_DIARY.md`)** — created on day one, with the record template in the file header.
 - **Repo hygiene (`.gitignore`)** — secrets (`.env*` except `.env.example`), local AI permissions (`.claude/settings.local.json`), dependencies and build outputs.
 
+[0.2.0]: https://github.com/01laky/purple-currency-converter/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/01laky/purple-currency-converter/compare/v0.0.0...v0.1.0
 [0.0.0]: https://github.com/01laky/purple-currency-converter/releases/tag/v0.0.0

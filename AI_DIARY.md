@@ -42,3 +42,23 @@ Record template:
 **My intervention:** None needed for (1) and (2) — the guardrails handled themselves. For (3) the AI noticed the contradiction (compose reported a port conflict, yet db:init succeeded), listed the running containers, found the stale one, removed it and recycled the compose stack; I only watched.
 
 **Lesson:** A success message is not proof you talked to the right system — verify the target, not just the response. And the meta-lesson: the time invested into the v0.0.0 guardrail audit repaid itself in the first hour of real coding.
+
+## [2026-06-12 05:34] — v0.2.0: shaping the prompt is design review, not paperwork
+
+**Context:** The AI drafted `prompt/v0.2.0.md` (i18n + `GET /api/init`) from the proposal. Instead of approving it right away, I read it critically — and three design discussions came out of a one-page prompt before any code existed.
+
+**What happened:** (1) I added a hard policy: a missing translation must never fall back to the key, English, an empty string or a placeholder — it fails immediately. The AI confirmed it is the right call and pointed out a thing I did not know: i18next (planned for the frontend at 0.9.0) silently returns the key by default, so without this policy written down the anti-pattern would have walked in unnoticed. (2) I added a second policy: existing tests are a contract — never adapt an old test to new behavior unless the prompt requires it; the AI framed it well ("a failing old test means the change is wrong, not the test") and turned it into rule 29. (3) I challenged the ETag design ("SHA-256 of the response JSON — does that make sense or change it?"); the AI defended the original design with concrete reasons (content-addressed never lies, computed once per process so the cost is zero, version-based ETags lie in dev when texts change without a version bump) and I kept it unchanged.
+
+**My intervention:** Two additions written into the proposal, CLAUDE.md (rule 29) and the prompt; one challenge resolved by keeping the design. All before a single line of v0.2.0 code.
+
+**Lesson:** The prompt review is the cheapest design review there is — policies and challenges land in the spec while changing them costs nothing. And asking the AI "does this make sense or should we change it" is a legitimate design tool: a good answer defends the design with reasons, not with agreement.
+
+## [2026-06-12 05:44] — v0.2.0: rule 29 in action and a recursive schema that just worked
+
+**Context:** Implementing `prompt/v0.2.0.md` (the i18n module + `GET /api/init` with ETag revalidation) in the same session that shaped the prompt.
+
+**What happened:** The fresh rule 29 (existing tests are a contract) got its first real exercise: the error handler switched its message source from the v0.1.0 constants to the EN translation file, and the v0.1.0 tests asserting "Resource not found" and "Internal server error" stayed green untouched — the catalog was written to honor the existing contract, not the other way around. The new policies materialized as code the same day they were written: `formatEnglishMessage` throws on an unknown key, a non-leaf key and a missing interpolation param, and all three throwing branches have tests. One technical bet paid off: the recursive Zod schema for the translation tree (`z.lazy`) survived both the OpenAPI generation and the response serializer on the first try — I had a bounded-depth fallback ready and never needed it. The typecheck hook kept catching intermediate states (unused imports between two edits) — noisy but exactly its job.
+
+**My intervention:** None during the implementation itself — the prompt was specific enough that the AI worked through the checkbox list without a single question. I reviewed the CS/SK translations it drafted (they were correct).
+
+**Lesson:** A precise prompt turns the implementation into verification — the discussion belongs at the prompt stage, not the coding stage. And writing the full key catalog up front (including keys for codes that do not exist yet) meant zero schema churn is waiting for v0.3.0–0.5.0.

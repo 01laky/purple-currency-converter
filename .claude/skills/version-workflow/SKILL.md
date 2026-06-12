@@ -17,6 +17,7 @@ Source of truth: CLAUDE.md (rules 10, 13, 14, 15, 20, 22, 26) and docs/proposal.
 ## During the work
 
 - Implement EXCLUSIVELY the tasks of the version's prompt (rule 25) — write anything extra into the Backlog section of `docs/proposal.md` and continue.
+- Existing tests are a contract (rule 29) — never adapt an old test to new behavior unless the prompt explicitly requires it; add new tests instead. A failing old test means the change is wrong, not the test.
 - Tick a checkbox in the prompt ONLY AFTER the given task is verified, never in advance (rule 10).
 - Every logic change = a test in the same commit.
 - Make no decisions alone — present options with a recommendation and wait (rule 9).

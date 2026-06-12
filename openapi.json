@@ -3,7 +3,7 @@
 	"info": {
 		"title": "Currency Conversion API",
 		"description": "Currency conversion with live exchange rates — Purple LAB case study.",
-		"version": "0.1.0"
+		"version": "0.2.0"
 	},
 	"components": {
 		"schemas": {}
@@ -50,6 +50,111 @@
 										"version",
 										"uptime",
 										"ratesCacheAge"
+									],
+									"additionalProperties": false
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Default Response",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"error": {
+											"type": "object",
+											"properties": {
+												"code": {
+													"type": "string",
+													"enum": [
+														"VALIDATION_ERROR",
+														"NOT_FOUND",
+														"INTERNAL_ERROR"
+													],
+													"description": "Programmatic error code"
+												},
+												"key": {
+													"type": "string",
+													"description": "i18n key for the frontend (translations arrive via GET /api/init in v0.2.0)"
+												},
+												"message": {
+													"type": "string",
+													"description": "Human-readable message, always in English"
+												},
+												"params": {
+													"description": "Interpolation values for the i18n key",
+													"type": "object",
+													"additionalProperties": {
+														"anyOf": [
+															{
+																"type": "string"
+															},
+															{
+																"type": "number"
+															}
+														]
+													}
+												}
+											},
+											"required": [
+												"code",
+												"key",
+												"message"
+											],
+											"additionalProperties": false
+										}
+									},
+									"required": [
+										"error"
+									],
+									"additionalProperties": false
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/init": {
+			"get": {
+				"summary": "All texts of the system",
+				"tags": [
+					"i18n"
+				],
+				"description": "The supported languages and the complete translation trees of all of them at once. Every response carries a strong ETag (constant for the process lifetime) and Cache-Control: no-cache; a request with a matching If-None-Match receives 304 Not Modified with an empty body.",
+				"responses": {
+					"200": {
+						"description": "Default Response",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"languages": {
+											"type": "array",
+											"items": {
+												"type": "string",
+												"enum": [
+													"en",
+													"cs",
+													"sk"
+												]
+											},
+											"description": "Supported language codes (ISO 639-1) — the frontend hardcodes nothing"
+										},
+										"translations": {
+											"type": "object",
+											"additionalProperties": {
+												"$ref": "#/components/schemas/schema0"
+											},
+											"description": "The complete translation tree of every supported language"
+										}
+									},
+									"required": [
+										"languages",
+										"translations"
 									],
 									"additionalProperties": false
 								}

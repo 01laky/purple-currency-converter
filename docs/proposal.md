@@ -129,6 +129,7 @@ No path versioning (no `/api/v1`): the API has a single consumer, the contract i
 - **Revalidation via HTTP ETag (conditional requests):** the response carries an `ETag` (a hash of the JSON, computed once at process start) + `Cache-Control: no-cache`. On the next load the browser automatically sends `If-None-Match` and the backend replies `304 Not Modified` with an empty body when the texts have not changed. Standard HTTP behavior — no manual hash endpoint and no custom cache logic.
 - **Fallback:** if `/api/init` fails, the frontend shows a single hardcoded message ("Failed to load application"). A bundled backup copy of the translations does not exist — it would double the maintenance and defeat the single-source principle.
 - **Translation parity is a test:** every key must exist in all languages; a missing translation fails the tests.
+- **A missing translation never falls back — it fails immediately.** Under no circumstance does a missing key resolve to the key itself, the English text, an empty string or a placeholder: the backend throws (rule 24), and the frontend i18n layer is configured the same way (§10 — i18next's default of returning the key is explicitly disabled). A silent fallback would hide a broken catalog exactly where the parity test is supposed to catch it.
 
 ### `GET /api/stats`
 
@@ -384,7 +385,7 @@ The project is developed in collaboration with AI (Claude Code, the Claude Fable
 
 | Layer      | File(s)                        | Role                                                  |
 | ---------- | ------------------------------ | ----------------------------------------------------- |
-| Rules      | `CLAUDE.md` (28 working rules) | the contract with the AI — loaded every session       |
+| Rules      | `CLAUDE.md` (29 working rules) | the contract with the AI — loaded every session       |
 | Guardrails | `.claude/settings.json`        | machine-enforced boundaries (permissions, hooks)      |
 | Commands   | `.claude/commands/`            | procedures triggered by the human (`/name`)           |
 | Skills     | `.claude/skills/`              | procedures the AI picks up automatically by task type |

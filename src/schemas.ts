@@ -1,4 +1,6 @@
 import { z } from 'zod';
+import { LANGUAGES } from './i18n/constants.js';
+import type { TranslationTree } from './i18n/types.js';
 import { ErrorCode } from './lib/enums.js';
 
 export const healthResponseSchema = z.object({
@@ -27,4 +29,19 @@ export const errorResponseSchema = z.object({
 	}),
 });
 
+const translationTreeSchema: z.ZodType<TranslationTree> = z.lazy(() =>
+	z.record(z.string(), z.union([z.string(), translationTreeSchema])),
+);
+
+export const initResponseSchema = z.object({
+	languages: z
+		.array(z.enum(LANGUAGES))
+		.describe('Supported language codes (ISO 639-1) — the frontend hardcodes nothing'),
+	translations: z
+		.record(z.string(), translationTreeSchema)
+		.describe('The complete translation tree of every supported language'),
+});
+
 export type HealthResponse = z.infer<typeof healthResponseSchema>;
+
+export type InitResponse = z.infer<typeof initResponseSchema>;

@@ -16,7 +16,7 @@ Goal: set up the AI collaboration so that it is **professional, repeatable and v
 
 Claude Code loads it automatically at the start of every session. It is **the contract between me and the AI**: conventions, commands, domain traps. Without it every session starts from zero and the AI repeats the same mistakes.
 
-The initial draft of the content from before the implementation (kept for the context of the decisions). **The living contract is `CLAUDE.md` in the repo root** — over the project it grew to 28 rules; real failures and agreements kept extending it, exactly per the "living document" principle below:
+The initial draft of the content from before the implementation (kept for the context of the decisions). **The living contract is `CLAUDE.md` in the repo root** — over the project it grew to 29 rules; real failures and agreements kept extending it, exactly per the "living document" principle below:
 
 ```markdown
 # Currency Conversion API — project rules
@@ -209,7 +209,7 @@ Expected sources of records in this project (guessing ahead): floating point wit
     ├── dynamo-stats/           # DynamoDB patterns (transactions, cents, retry, db:init)
     ├── fe-component/           # React component conventions (i18n, helpers, hooks, RTL)
     └── figma-to-scss/          # design-token extraction (the values are supplied by the human from Figma)
-CLAUDE.md                       # the project memory — the contract with the AI (28 working rules)
+CLAUDE.md                       # the project memory — the contract with the AI (29 working rules)
 AI_DIARY.md                     # the collaboration diary (continuous, rule 26)
 CHANGELOG.md                    # Keep a Changelog, datetimed entries = the time-budget source (from v0.0.0)
 README.md                       # badges, the future vision (v1.0.0), the API reference, the quick start, the documentation table

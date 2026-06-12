@@ -70,6 +70,7 @@ Stack: TypeScript, Fastify + Zod (fastify-type-provider-zod), DynamoDB (locally 
 26. **Every version = a new session + a diary record.** Work on a version starts with a clean context (`/clear`); the AI first reads `CLAUDE.md`, `docs/proposal.md` and the version's prompt. Part of the definition of done of a version is at least one record in `AI_DIARY.md`. Every diary record starts with a datetime (`YYYY-MM-DD HH:MM`) — together with the changelog datetimes (rule 14) it is the source for the submission time budget.
 27. **A new env variable = an updated `.env.example` + README in the same commit.** `.env.example` is always the complete list of the configuration, without values.
 28. **Tests live ALWAYS separately from the sources.** A dedicated `tests/` directory in the given part (API: `tests/`, frontend: `web/tests/`) whose structure mirrors `src/`. NEVER `*.test.ts` next to source files — no colocation.
+29. **Existing tests are a contract.** Do not modify or delete an existing test unless the version's prompt or the proposal explicitly requires the contract change — making a failing test pass by editing the test is forbidden. Prefer adding new tests over changing old ones. Purely mechanical updates (e.g. import paths at the v0.9.0 monorepo move) are allowed when the prompt covers them.
 
 ## Conventions
 

@@ -4,6 +4,15 @@ All notable changes to this project are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html). Every entry carries the datetime the version was closed — together with the AI_DIARY.md datetimes it is the source of the submission time budget (rule 14).
 
+## [0.8.0] — 2026-06-12 13:47
+
+**The milestone: Level 1 of the assignment complete, including both bonuses (the deploy + IaC).**
+
+### Added
+
+- **The production deploy and the live URL** — the production stage deployed by the human from the existing SST config (zero application-code change); the full live verification sweep passed: the health diagnostics, the ETag/304 revalidation, the first live OER call (172 currencies — the secret works), a real conversion with the full-precision rate and the once-rounded result, the validation and 422 catalogs over HTTP, the statistics written to and read from the production DynamoDB, the Swagger UI including its copied assets, and the unified 404.
+- **README.md** — the complete rule-17 structure: the badges (the live GitHub Actions CI badge instead of a hardcoded test count — it cannot go stale), the request-flow diagram with the documented trade-offs (the §4 cache-vs-OER-limit math, the §6 counters-not-event-log decision, the per-stage isolation), the API reference with the `rateTimestamp` semantics and the error-model table, the Quick Start (local + AWS) with the rule-27 env-variable table, the documentation links, the project status, the tech stack, the AI-collaboration section and the honest unlicensed status (revisited at 1.0.0).
+
 ## [0.7.0] — 2026-06-12 13:21
 
 ### Added
@@ -99,6 +108,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 - **AI collaboration diary (`AI_DIARY.md`)** — created on day one, with the record template in the file header.
 - **Repo hygiene (`.gitignore`)** — secrets (`.env*` except `.env.example`), local AI permissions (`.claude/settings.local.json`), dependencies and build outputs.
 
+[0.8.0]: https://github.com/01laky/purple-currency-converter/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/01laky/purple-currency-converter/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/01laky/purple-currency-converter/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/01laky/purple-currency-converter/compare/v0.4.0...v0.5.0

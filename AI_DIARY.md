@@ -168,3 +168,13 @@ Record template:
 **My intervention:** Both findings written into the prompt; the rule-18 clarification into CLAUDE.md. On the license itself I decided: none for now — all rights reserved by default, the README states it honestly, revisited at 1.0.0 before the submission.
 
 **Lesson:** A README is the one artifact with no test guarding it — anything hardcoded there (a count, a URL, a version) needs either a ritual that maintains it or a source that cannot go stale. Prefer the source.
+
+## [2026-06-12 13:47] — v0.8.0: Level 1 went live, and three deferred proofs landed at once
+
+**Context:** The milestone version — the production deploy and the README. I deployed (`sst secret set` + `sst deploy --stage production`, my side of the deny-list split) and handed the AI only the live URL; it ran the whole verification sweep itself and evaluated every leg.
+
+**What happened:** Seven checks, seven passes — and the sweep retroactively closed three proofs earlier versions had consciously deferred: the OER secret worked (the first live call returned 172 currencies), the production DynamoDB write worked (one conversion → `totalConversions: 1`, `totalAmountEur: 100`, `topTargetCurrency: CZK`), and the Swagger UI CSS answered 200 — the load-bearing `../` in copyFiles from my v0.7.0 prompt review survived contact with production. Two details worth keeping: the production `/api/init` ETag is byte-identical to the local one (the texts and the hash function are deterministic across environments — the contract behaves), and `ratesCacheAge` moved from `null` to `20` between the first and the last health call — the in-memory cache observable from the outside, exactly as §3 intended. The validation catalog (400 keys, the 422 with `params.code`) answered over the public internet exactly as the tests promised.
+
+**My intervention:** The deploy and the secret were mine; the sweep evaluation, the README (written before the URL existed, completed after — rule 19), the live URL fill-in and the closing were the AI's.
+
+**Lesson:** Deferring a verification is honest only when something later is DESIGNED to catch it — the v0.7.0 "open legs" worked because v0.8.0's sweep listed them by name. A deferral without a named catcher is just a hope.

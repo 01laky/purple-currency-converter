@@ -3,7 +3,7 @@
  * Do not edit manually.
  * Currency Conversion API
  * Currency conversion with live exchange rates — Purple LAB case study.
- * OpenAPI spec version: 0.10.0
+ * OpenAPI spec version: 0.11.0
  */
 
 export type GetApiInit200LanguagesItem = typeof GetApiInit200LanguagesItem[keyof typeof GetApiInit200LanguagesItem];

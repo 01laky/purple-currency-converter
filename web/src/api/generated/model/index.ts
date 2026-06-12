@@ -3,7 +3,7 @@
  * Do not edit manually.
  * Currency Conversion API
  * Currency conversion with live exchange rates — Purple LAB case study.
- * OpenAPI spec version: 0.10.0
+ * OpenAPI spec version: 0.11.0
  */
 
 export * from './getApiCurrencies200';
@@ -42,6 +42,10 @@ export * from './postApiConvert422';
 export * from './postApiConvert422Error';
 export * from './postApiConvert422ErrorCode';
 export * from './postApiConvert422ErrorParams';
+export * from './postApiConvert429';
+export * from './postApiConvert429Error';
+export * from './postApiConvert429ErrorCode';
+export * from './postApiConvert429ErrorParams';
 export * from './postApiConvert500';
 export * from './postApiConvert500Error';
 export * from './postApiConvert500ErrorCode';

@@ -100,6 +100,38 @@ describe('createRatesProvider', () => {
 		expect(stale.rateTimestamp).toBe(fresh.rateTimestamp);
 	});
 
+	// additive at v0.11.0 (the adversarial pass): the stale fallback warns through the injected
+	// logger — an OER outage is visible in the logs while the cache still answers (rule 24)
+	it('logs a warn line when the stale copy is served — the outage is never silent', async () => {
+		let time = 0;
+		let shouldFail = false;
+		const warn = vi.fn();
+		const provider = createRatesProvider({
+			now: () => time,
+			client: {
+				fetchFn: vi.fn(async () => {
+					if (shouldFail) {
+						throw new Error('upstream down');
+					}
+					return fixtureResponse();
+				}),
+			},
+			logger: { warn },
+		});
+
+		await provider.getRate('EUR', 'GBP');
+		expect(warn).not.toHaveBeenCalled();
+		shouldFail = true;
+		time += RATES_TTL_MS + 1;
+		await provider.getRate('EUR', 'GBP');
+
+		expect(warn).toHaveBeenCalledTimes(1);
+		expect(warn).toHaveBeenCalledWith(
+			{ err: expect.any(Error) },
+			'rates refresh failed — serving the stale copy',
+		);
+	});
+
 	it('throws RateProviderUnavailableError when the fetch fails with nothing cached', async () => {
 		const { provider } = createHarness(async () => {
 			throw new Error('upstream down');

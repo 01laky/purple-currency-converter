@@ -5,16 +5,16 @@
  * Currency conversion with live exchange rates — Purple LAB case study.
  * OpenAPI spec version: 0.11.0
  */
-import type { GetApiInit500ErrorCode } from './getApiInit500ErrorCode';
-import type { GetApiInit500ErrorParams } from './getApiInit500ErrorParams';
+import type { PostApiConvert429ErrorCode } from './postApiConvert429ErrorCode';
+import type { PostApiConvert429ErrorParams } from './postApiConvert429ErrorParams';
 
-export type GetApiInit500Error = {
+export type PostApiConvert429Error = {
   /** Programmatic error code */
-  code: GetApiInit500ErrorCode;
+  code: PostApiConvert429ErrorCode;
   /** i18n key for the frontend (translations arrive via GET /api/init in v0.2.0) */
   key: string;
   /** Human-readable message, always in English */
   message: string;
   /** Interpolation values for the i18n key */
-  params?: GetApiInit500ErrorParams;
+  params?: PostApiConvert429ErrorParams;
 };

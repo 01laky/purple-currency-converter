@@ -9,4 +9,4 @@
 /**
  * Interpolation values for the i18n key
  */
-export type GetApiStats500ErrorParams = {[key: string]: string | number};
+export type PostApiConvert429ErrorParams = {[key: string]: string | number};

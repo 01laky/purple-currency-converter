@@ -5,8 +5,8 @@
  * Currency conversion with live exchange rates — Purple LAB case study.
  * OpenAPI spec version: 0.11.0
  */
+import type { PostApiConvert429Error } from './postApiConvert429Error';
 
-/**
- * Interpolation values for the i18n key
- */
-export type GetApiStats500ErrorParams = {[key: string]: string | number};
+export type PostApiConvert429 = {
+  error: PostApiConvert429Error;
+};

@@ -4,10 +4,12 @@ export enum ErrorCode {
 	INTERNAL_ERROR = 'INTERNAL_ERROR',
 	RATE_PROVIDER_ERROR = 'RATE_PROVIDER_ERROR',
 	UNSUPPORTED_CURRENCY = 'UNSUPPORTED_CURRENCY',
+	RATE_LIMITED = 'RATE_LIMITED',
 }
 
 export enum ErrorKey {
 	NOT_FOUND = 'errors.notFound',
+	RATE_LIMITED = 'errors.rateLimited',
 	INTERNAL = 'errors.internal',
 	RATE_PROVIDER = 'errors.rateProvider',
 	UNSUPPORTED_CURRENCY = 'errors.unsupportedCurrency',

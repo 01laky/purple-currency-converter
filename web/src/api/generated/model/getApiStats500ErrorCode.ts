@@ -3,7 +3,7 @@
  * Do not edit manually.
  * Currency Conversion API
  * Currency conversion with live exchange rates — Purple LAB case study.
- * OpenAPI spec version: 0.10.0
+ * OpenAPI spec version: 0.11.0
  */
 
 /**
@@ -18,4 +18,5 @@ export const GetApiStats500ErrorCode = {
   INTERNAL_ERROR: 'INTERNAL_ERROR',
   RATE_PROVIDER_ERROR: 'RATE_PROVIDER_ERROR',
   UNSUPPORTED_CURRENCY: 'UNSUPPORTED_CURRENCY',
+  RATE_LIMITED: 'RATE_LIMITED',
 } as const;

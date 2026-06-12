@@ -1,6 +1,6 @@
 # Purple currency converter
 
-![Version](https://img.shields.io/badge/version-0.10.0-blue)
+![Version](https://img.shields.io/badge/version-0.11.0-blue)
 ![Node](https://img.shields.io/badge/node-%E2%89%A522-339933?logo=node.js&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white)
 [![CI](https://github.com/01laky/purple-currency-converter/actions/workflows/ci.yml/badge.svg)](https://github.com/01laky/purple-currency-converter/actions/workflows/ci.yml)
@@ -48,8 +48,9 @@ Interactive documentation: **`GET /docs`** (Swagger UI, available in production 
 ```
 
 - `amount` — positive, at most 2 decimal places, at most 1e12; `from`/`to` — 3-letter codes, case-insensitive (normalized to uppercase), must differ.
-- `rate` is returned in **full precision** (it is not a monetary amount — it makes the math verifiable); `result` is the only rounded field.
+- `rate` is returned in **full precision** (it is not a monetary amount — it makes the math verifiable); `result` is the only rounded field. Known limit: near the 1e12 amount bound converted into a very-high-rate currency, the result exceeds what IEEE doubles represent to the cent — documented in the proposal Backlog.
 - **`rateTimestamp` is the time the rates were fetched from the provider, NOT the moment of the conversion** — under the stale fallback it honestly carries the older time.
+- **Rate limited: 60 requests per minute per client IP** (only this endpoint — it is the one that writes). Over the limit → `429 RATE_LIMITED` in the unified error shape. Honest scope: the counter lives in instance memory, so with N concurrent Lambda instances the effective ceiling is N×60 (the account concurrency cap of 10 is the hard backstop), and the limit is **abuse damping, not a security boundary** — the keying trusts the IP CloudFront appends to `x-forwarded-for`, which a caller hitting the Lambda Function URL directly can spoof; the public entry point is the CloudFront URL.
 
 ### `GET /api/currencies`
 
@@ -74,7 +75,7 @@ All texts of the system (EN/CS/SK) in one response: `{ "languages": ["en", "cs",
 ### `GET /health`
 
 ```jsonc
-{ "ok": true, "version": "0.8.0", "uptime": 1234, "ratesCacheAge": 120 }
+{ "ok": true, "version": "0.11.0", "uptime": 1234, "ratesCacheAge": 120 }
 ```
 
 Instance diagnostics — the version, the process uptime and the age of the rates cache (`null` before the first fetch).
@@ -88,6 +89,7 @@ Every error has the unified shape `{ "error": { "code", "key", "message", "param
 | 400  | `VALIDATION_ERROR`     | an input shape error — the `key` names the exact reason    |
 | 404  | `NOT_FOUND`            | an unknown route                                           |
 | 422  | `UNSUPPORTED_CURRENCY` | the currency has no rate (`params.code` carries which one) |
+| 429  | `RATE_LIMITED`         | over 60 `/api/convert` requests per minute from one IP     |
 | 500  | `INTERNAL_ERROR`       | unexpected — no stack traces, no internals in the response |
 | 502  | `RATE_PROVIDER_ERROR`  | the rate provider is unreachable and no stale copy exists  |
 
@@ -149,7 +151,7 @@ The frontend has its own [`web/.env.example`](web/.env.example): `VITE_API_URL` 
 
 ## Project Status
 
-**v0.8.0 — Level 1 of the assignment complete, including both bonuses (deploy + IaC).**
+**v0.11.0 — Level 2 complete and hardened; what remains is the submission finalization (v1.0.0).**
 
 | Version      | Content                                             | Status |
 | ------------ | --------------------------------------------------- | ------ |
@@ -164,7 +166,7 @@ The frontend has its own [`web/.env.example`](web/.env.example): `VITE_API_URL` 
 | 0.8.0        | the production deploy and the live URL              | ✅     |
 | 0.9.0        | the frontend base — the monorepo, the Figma tokens, the generated client, the converter | ✅ |
 | 0.10.0       | the frontend completion + the same-origin deploy (Level 2) | ✅ |
-| 0.11.0       | hardening (the rate limit, edge cases)              | ⏳     |
+| 0.11.0       | hardening (the rate limit, the adversarial pass, the documentation sync) | ✅ |
 | 1.0.0        | the submission (the future vision, the time budget) | ⏳     |
 
 ## Tech Stack

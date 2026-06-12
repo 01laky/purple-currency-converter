@@ -19,6 +19,9 @@ export type CachedSourceOptions<T> = {
 	fetchFn: () => Promise<T>;
 	ttlMs: number;
 	now: Clock;
+	// the stale fallback is by design (§4), but it must not be SILENT (rule 24, v0.11.0):
+	// the owner observes every refresh failure that was absorbed by serving the stale copy
+	onStaleServed?: (error: unknown) => void;
 };
 
 export type CachedSource<T> = {
@@ -31,9 +34,15 @@ export type OerClientDeps = {
 	timeoutMs?: number;
 };
 
+// The same structural shape as the stats StatsWriteLogger — a Fastify logger satisfies it
+export type StaleWarnLogger = {
+	warn: (data: Record<string, unknown>, message: string) => void;
+};
+
 export type RatesProviderDeps = {
 	now?: Clock;
 	client?: OerClientDeps;
+	logger?: StaleWarnLogger;
 };
 
 export type RateQuote = {

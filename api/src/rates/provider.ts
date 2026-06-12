@@ -45,15 +45,22 @@ const resolveUsdRate = (rates: Record<string, number>, code: string): number => 
  */
 export const createRatesProvider = (deps?: RatesProviderDeps): RatesProvider => {
 	const now = deps?.now ?? Date.now;
+	const logger = deps?.logger;
 	const source = createCachedSource<OerLatestRates>({
 		fetchFn: () => fetchLatestRates(deps?.client),
 		ttlMs: RATES_TTL_MS,
 		now,
+		// the §4 stale fallback, observably (rule 24, v0.11.0): an OER outage must be visible
+		// in the logs while the cache still answers, not only once it dies into the 502
+		onStaleServed: (error) =>
+			logger?.warn({ err: error }, 'rates refresh failed — serving the stale copy'),
 	});
 	const namesSource = createCachedSource<CurrencyNames>({
 		fetchFn: () => fetchCurrencyNames(deps?.client),
 		ttlMs: NAMES_TTL_MS,
 		now,
+		onStaleServed: (error) =>
+			logger?.warn({ err: error }, 'currency names refresh failed — serving the stale copy'),
 	});
 
 	/**

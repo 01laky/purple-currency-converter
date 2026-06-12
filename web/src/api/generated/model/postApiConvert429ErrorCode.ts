@@ -9,10 +9,10 @@
 /**
  * Programmatic error code
  */
-export type PostApiConvert502ErrorCode = typeof PostApiConvert502ErrorCode[keyof typeof PostApiConvert502ErrorCode];
+export type PostApiConvert429ErrorCode = typeof PostApiConvert429ErrorCode[keyof typeof PostApiConvert429ErrorCode];
 
 
-export const PostApiConvert502ErrorCode = {
+export const PostApiConvert429ErrorCode = {
   VALIDATION_ERROR: 'VALIDATION_ERROR',
   NOT_FOUND: 'NOT_FOUND',
   INTERNAL_ERROR: 'INTERNAL_ERROR',

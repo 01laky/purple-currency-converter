@@ -436,3 +436,10 @@ Every version of the roadmap from v0.1.0 onward has a prompt in [`/prompt`](../p
 | **1.0.0**  | Submission finalization: the AI diary complete, the future vision (the README-top section — §12), the time budget (summed from the changelog/diary datetimes), the final README                                                                                                                                                                              | submission                         |
 
 Milestones: **0.8.0 = a submittable Level 1** (if time ran out, this is where to cut), **1.0.0 = the full Level 2 submission**.
+
+## 15. Backlog
+
+Rule 25: anything outside a version's scope lands here; the items are planned only after v1.0.0 — never implemented "along the way".
+
+- **A per-conversion event log** (from §6): the counters answer the three required aggregates in O(1); a history would enable richer statistics at the cost of scans and migration. Recorded at v0.6.0.
+- **Result-magnitude precision** (the v0.11.0 adversarial pass, N4): `MAX_AMOUNT` (1e12) bounds the INPUT, not the result — an extreme amount converted into a high-rate currency (e.g. 1e12 EUR → IDR) produces a result whose cents exceed 2^53, where IEEE doubles cannot represent cent precision (neither in the computation nor in the JSON number itself). The contract stays verifiable (the full-precision rate is returned); a fix would mean a result-magnitude bound (a contract change) or a decimal-string response field. Severity: cosmetic at absurd magnitudes. Recorded at v0.11.0.

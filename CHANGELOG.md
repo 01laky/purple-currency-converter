@@ -4,7 +4,7 @@ All notable changes to this project are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html). Every entry carries the datetime the version was closed — together with the AI_DIARY.md datetimes it is the source of the submission time budget (rule 14).
 
-## [0.10.0] — 2026-06-12 15:40
+## [0.10.0] — 2026-06-12 16:15
 
 **Level 2 functionally complete: the frontend completion and the same-origin production.**
 

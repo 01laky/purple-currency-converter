@@ -34,7 +34,7 @@ Design notes and conscious trade-offs:
 
 ## API reference
 
-**Live URL (production):** <https://m5hxzqekb4av5lk2slzqxen47i0ixdfn.lambda-url.eu-central-1.on.aws> — try [`/health`](https://m5hxzqekb4av5lk2slzqxen47i0ixdfn.lambda-url.eu-central-1.on.aws/health) or the interactive [`/docs`](https://m5hxzqekb4av5lk2slzqxen47i0ixdfn.lambda-url.eu-central-1.on.aws/docs)
+**Live (production, one origin):** <https://d39k5qe4ticled.cloudfront.net> — **the app**, with the API same-origin under [`/api/*`](https://d39k5qe4ticled.cloudfront.net/api/stats), the diagnostics at [`/health`](https://d39k5qe4ticled.cloudfront.net/health) and the interactive [`/docs`](https://d39k5qe4ticled.cloudfront.net/docs)
 
 Interactive documentation: **`GET /docs`** (Swagger UI, available in production too); the raw OpenAPI document at `/docs/json`; the committed contract artifact in [`api/openapi.json`](api/openapi.json).
 

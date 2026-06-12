@@ -15,6 +15,7 @@ coverage/
 
 # SST
 .sst/
+sst-env.d.ts
 
 # OS / editor noise
 .DS_Store

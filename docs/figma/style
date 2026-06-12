@@ -1,0 +1,1192 @@
+/* Web */
+
+position: relative;
+width: 1728px;
+height: 1117px;
+
+background: #EAECEF;
+
+
+/* Purple currency converter */
+
+position: absolute;
+width: 365px;
+height: 40px;
+left: 681px;
+top: 120px;
+
+/* Heading/H1 heading */
+font-family: 'Roboto';
+font-style: normal;
+font-weight: 400;
+font-size: 32px;
+line-height: 40px;
+/* identical to box height, or 125% */
+
+color: #000000;
+
+
+
+/* Rectangle 1 */
+
+position: absolute;
+width: 860px;
+height: 213px;
+left: 434px;
+top: 200px;
+
+background: #522473;
+box-shadow: 0px 0px 13px rgba(0, 0, 0, 0.27);
+border-radius: 10px;
+
+
+/* Amount to convert */
+
+position: absolute;
+width: 128px;
+height: 18px;
+left: 472px;
+top: 271px;
+
+font-family: 'Roboto';
+font-style: normal;
+font-weight: 500;
+font-size: 15px;
+line-height: 18px;
+/* identical to box height */
+letter-spacing: 0.01em;
+
+color: #FFFFFF;
+
+
+
+/* From */
+
+position: absolute;
+width: 36px;
+height: 18px;
+left: 739px;
+top: 271px;
+
+font-family: 'Roboto';
+font-style: normal;
+font-weight: 500;
+font-size: 15px;
+line-height: 18px;
+/* identical to box height */
+letter-spacing: 0.01em;
+
+color: #FFFFFF;
+
+
+
+/* To */
+
+position: absolute;
+width: 17px;
+height: 18px;
+left: 1006px;
+top: 271px;
+
+font-family: 'Roboto';
+font-style: normal;
+font-weight: 500;
+font-size: 15px;
+line-height: 18px;
+/* identical to box height */
+letter-spacing: 0.01em;
+
+color: #FFFFFF;
+
+
+
+/* Input */
+
+box-sizing: border-box;
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+align-items: center;
+padding: 18px 11px;
+gap: 10px;
+
+position: absolute;
+width: 250px;
+height: 44px;
+left: 472px;
+top: 297px;
+
+/* Grey/grey-0 */
+background: #FFFFFF;
+/* Grey/grey-40
+
+Used for 1px lines in layout &amp; elements
+*/
+border: 1px solid #CCCCCC;
+border-radius: 6px;
+
+
+/* Input label */
+
+width: 24px;
+height: 16px;
+
+font-family: 'Roboto';
+font-style: normal;
+font-weight: 400;
+font-size: 14px;
+line-height: 16px;
+letter-spacing: 0.01em;
+
+/* Grey/grey-90 */
+color: #141414;
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/* Select */
+
+box-sizing: border-box;
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+justify-content: space-between;
+align-items: center;
+padding: 20px 11px;
+gap: 185px;
+
+position: absolute;
+width: 250px;
+height: 44px;
+left: 739px;
+top: 297px;
+
+/* Grey/grey-0 */
+background: #FFFFFF;
+/* Grey/grey-40
+
+Used for 1px lines in layout &amp; elements
+*/
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+
+
+/* Select label */
+
+margin: 0 auto;
+width: 26px;
+height: 16px;
+
+font-family: 'Roboto';
+font-style: normal;
+font-weight: 400;
+font-size: 14px;
+line-height: 16px;
+letter-spacing: 0.01em;
+
+/* Grey/grey-90 */
+color: #141414;
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/*  Basic / Arrow down 5pt */
+
+margin: 0 auto;
+width: 14px;
+height: 14px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 1;
+flex-grow: 0;
+
+
+/* Outlined */
+
+position: absolute;
+width: 9.92px;
+height: 5.83px;
+left: 2.04px;
+top: 4.08px;
+
+
+
+/* Union */
+
+position: absolute;
+left: 14.58%;
+right: 43.75%;
+top: 29.17%;
+bottom: 0%;
+
+/* Grey/grey-80 */
+background: #4D4D4D;
+transform: rotate(-90deg);
+
+
+/* Select */
+
+box-sizing: border-box;
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+justify-content: space-between;
+align-items: center;
+padding: 20px 11px;
+gap: 185px;
+
+position: absolute;
+width: 250px;
+height: 44px;
+left: 1006px;
+top: 297px;
+
+/* Grey/grey-0 */
+background: #FFFFFF;
+/* Grey/grey-40
+
+Used for 1px lines in layout &amp; elements
+*/
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+
+
+/* Select label */
+
+margin: 0 auto;
+width: 27px;
+height: 16px;
+
+font-family: 'Roboto';
+font-style: normal;
+font-weight: 400;
+font-size: 14px;
+line-height: 16px;
+letter-spacing: 0.01em;
+
+/* Grey/grey-90 */
+color: #141414;
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/*  Basic / Arrow down 5pt */
+
+margin: 0 auto;
+width: 14px;
+height: 14px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 1;
+flex-grow: 0;
+
+
+/* Outlined */
+
+position: absolute;
+width: 9.92px;
+height: 5.83px;
+left: 2.04px;
+top: 4.08px;
+
+
+
+/* Union */
+
+position: absolute;
+left: 14.58%;
+right: 43.75%;
+top: 29.17%;
+bottom: 0%;
+
+/* Grey/grey-80 */
+background: #4D4D4D;
+transform: rotate(-90deg);
+
+
+/* Button
+
+To resize a button:
+1. Choose the &quot;button base&quot; component in it
+2. Change the horizontal resizing to &quot;fill container&quot;
+3. Select the button itself, and change its horizontal resizing to &quot;fixed width&quot;
+
+Big button for main actions
+*/
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+justify-content: center;
+align-items: center;
+padding: 0px;
+gap: 12px;
+
+position: absolute;
+width: 167px;
+height: 52px;
+left: 780px;
+top: 445px;
+
+/* Button shadow */
+filter: drop-shadow(4px 4px 6px rgba(0, 0, 0, 0.11));
+border-radius: 6px;
+
+
+/* Button base */
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+justify-content: center;
+align-items: center;
+padding: 0px 26px;
+gap: 12px;
+
+width: 167px;
+height: 52px;
+
+/* Brand purple / primary */
+background: #522974;
+border-radius: 6px;
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/* Text */
+
+width: 115px;
+height: 18px;
+
+font-family: 'Roboto';
+font-style: normal;
+font-weight: 500;
+font-size: 15px;
+line-height: 18px;
+/* identical to box height */
+text-align: center;
+
+/* Grey/grey-0 */
+color: #FFFFFF;
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/* Frame 3 */
+
+box-sizing: border-box;
+
+/* Auto layout */
+display: flex;
+flex-direction: column;
+justify-content: center;
+align-items: center;
+padding: 24px;
+gap: 24px;
+
+position: absolute;
+width: 247px;
+height: 227px;
+left: 740px;
+top: 545px;
+
+border: 1px solid rgba(0, 0, 0, 0.2);
+border-radius: 6px;
+
+
+/* Frame 2 */
+
+/* Auto layout */
+display: flex;
+flex-direction: column;
+align-items: flex-start;
+padding: 0px;
+gap: 14px;
+
+width: 199px;
+height: 65px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/* Result */
+
+width: 42px;
+height: 18px;
+
+font-family: 'Roboto';
+font-style: normal;
+font-weight: 400;
+font-size: 15px;
+line-height: 18px;
+/* identical to box height */
+text-align: center;
+
+/* Grey/grey-80 */
+color: #4D4D4D;
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/* 4 942,52 CZK */
+
+width: 169px;
+height: 33px;
+
+font-family: 'Roboto';
+font-style: normal;
+font-weight: 500;
+font-size: 28px;
+line-height: 33px;
+/* identical to box height */
+text-align: center;
+
+/* Grey/grey-90 */
+color: #141414;
+
+
+/* Inside auto layout */
+flex: none;
+order: 1;
+flex-grow: 0;
+
+
+/* Rectangle 2 */
+
+width: 197px;
+height: 1px;
+
+background: rgba(0, 0, 0, 0.2);
+
+/* Inside auto layout */
+flex: none;
+order: 1;
+flex-grow: 0;
+
+
+/* Frame 1 */
+
+/* Auto layout */
+display: flex;
+flex-direction: column;
+align-items: flex-start;
+padding: 0px;
+gap: 14px;
+
+width: 198px;
+height: 65px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 2;
+flex-grow: 0;
+
+
+/* Number of calculations made */
+
+width: 198px;
+height: 18px;
+
+font-family: 'Roboto';
+font-style: normal;
+font-weight: 400;
+font-size: 15px;
+line-height: 18px;
+/* identical to box height */
+text-align: center;
+
+/* Grey/grey-80 */
+color: #4D4D4D;
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/* 3 */
+
+width: 16px;
+height: 33px;
+
+font-family: 'Roboto';
+font-style: normal;
+font-weight: 500;
+font-size: 28px;
+line-height: 33px;
+/* identical to box height */
+text-align: center;
+
+/* Grey/grey-90 */
+color: #141414;
+
+
+/* Inside auto layout */
+flex: none;
+order: 1;
+flex-grow: 0;
+
+
+/* Mobile */
+
+position: relative;
+width: 428px;
+height: 993px;
+
+background: #EAECEF;
+
+
+/* Purple currency converter */
+
+position: absolute;
+width: 365px;
+height: 40px;
+left: 31px;
+top: 149px;
+
+/* Heading/H1 heading */
+font-family: 'Roboto';
+font-style: normal;
+font-weight: 400;
+font-size: 32px;
+line-height: 40px;
+/* identical to box height, or 125% */
+
+color: #000000;
+
+
+
+/* Rectangle 1 */
+
+position: absolute;
+width: 391px;
+height: 342px;
+left: 17px;
+top: 239px;
+
+background: #522473;
+box-shadow: 0px 0px 13px rgba(0, 0, 0, 0.27);
+border-radius: 10px;
+
+
+/* Frame 4 */
+
+/* Auto layout */
+display: flex;
+flex-direction: column;
+align-items: flex-start;
+padding: 0px;
+gap: 24px;
+
+position: absolute;
+width: 338px;
+height: 258px;
+left: 44px;
+top: 281px;
+
+
+
+/* Group 4 */
+
+width: 338px;
+height: 70px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/* Group 3 */
+
+position: absolute;
+width: 128px;
+height: 18px;
+left: 0px;
+top: 0px;
+
+
+
+/* Amount to convert */
+
+position: absolute;
+width: 128px;
+height: 18px;
+left: 0px;
+top: 0px;
+
+font-family: 'Roboto';
+font-style: normal;
+font-weight: 500;
+font-size: 15px;
+line-height: 18px;
+/* identical to box height */
+letter-spacing: 0.01em;
+
+color: #FFFFFF;
+
+
+
+/* Input */
+
+box-sizing: border-box;
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+align-items: center;
+padding: 18px 11px;
+gap: 10px;
+
+position: absolute;
+width: 338px;
+height: 44px;
+left: 0px;
+top: 26px;
+
+/* Grey/grey-0 */
+background: #FFFFFF;
+/* Grey/grey-40
+
+Used for 1px lines in layout &amp; elements
+*/
+border: 1px solid #CCCCCC;
+border-radius: 6px;
+
+
+/* Input label */
+
+width: 24px;
+height: 16px;
+
+font-family: 'Roboto';
+font-style: normal;
+font-weight: 400;
+font-size: 14px;
+line-height: 16px;
+letter-spacing: 0.01em;
+
+/* Grey/grey-90 */
+color: #141414;
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/* Group 2 */
+
+width: 338px;
+height: 70px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 1;
+flex-grow: 0;
+
+
+/* From */
+
+position: absolute;
+width: 36px;
+height: 18px;
+left: 0px;
+top: 94px;
+
+font-family: 'Roboto';
+font-style: normal;
+font-weight: 500;
+font-size: 15px;
+line-height: 18px;
+/* identical to box height */
+letter-spacing: 0.01em;
+
+color: #FFFFFF;
+
+
+
+/* Select */
+
+box-sizing: border-box;
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+justify-content: space-between;
+align-items: center;
+padding: 20px 11px;
+gap: 185px;
+
+position: absolute;
+width: 338px;
+height: 44px;
+left: 0px;
+top: 120px;
+
+/* Grey/grey-0 */
+background: #FFFFFF;
+/* Grey/grey-40
+
+Used for 1px lines in layout &amp; elements
+*/
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+
+
+/* Select label */
+
+margin: 0 auto;
+width: 26px;
+height: 16px;
+
+font-family: 'Roboto';
+font-style: normal;
+font-weight: 400;
+font-size: 14px;
+line-height: 16px;
+letter-spacing: 0.01em;
+
+/* Grey/grey-90 */
+color: #141414;
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/*  Basic / Arrow down 5pt */
+
+margin: 0 auto;
+width: 14px;
+height: 14px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 1;
+flex-grow: 0;
+
+
+/* Outlined */
+
+position: absolute;
+width: 9.92px;
+height: 5.83px;
+left: 2.04px;
+top: 4.08px;
+
+
+
+/* Union */
+
+position: absolute;
+left: 14.58%;
+right: 43.75%;
+top: 29.17%;
+bottom: 0%;
+
+/* Grey/grey-80 */
+background: #4D4D4D;
+transform: rotate(-90deg);
+
+
+/* Group 1 */
+
+width: 338px;
+height: 70px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 2;
+flex-grow: 0;
+
+
+/* To */
+
+position: absolute;
+width: 17px;
+height: 18px;
+left: 0px;
+top: 188px;
+
+font-family: 'Roboto';
+font-style: normal;
+font-weight: 500;
+font-size: 15px;
+line-height: 18px;
+/* identical to box height */
+letter-spacing: 0.01em;
+
+color: #FFFFFF;
+
+
+
+/* Select */
+
+box-sizing: border-box;
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+justify-content: space-between;
+align-items: center;
+padding: 20px 11px;
+gap: 185px;
+
+position: absolute;
+width: 338px;
+height: 44px;
+left: 0px;
+top: 214px;
+
+/* Grey/grey-0 */
+background: #FFFFFF;
+/* Grey/grey-40
+
+Used for 1px lines in layout &amp; elements
+*/
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+
+
+/* Select label */
+
+margin: 0 auto;
+width: 27px;
+height: 16px;
+
+font-family: 'Roboto';
+font-style: normal;
+font-weight: 400;
+font-size: 14px;
+line-height: 16px;
+letter-spacing: 0.01em;
+
+/* Grey/grey-90 */
+color: #141414;
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/*  Basic / Arrow down 5pt */
+
+margin: 0 auto;
+width: 14px;
+height: 14px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 1;
+flex-grow: 0;
+
+
+/* Outlined */
+
+position: absolute;
+width: 9.92px;
+height: 5.83px;
+left: 2.04px;
+top: 4.08px;
+
+
+
+/* Union */
+
+position: absolute;
+left: 14.58%;
+right: 43.75%;
+top: 29.17%;
+bottom: 0%;
+
+/* Grey/grey-80 */
+background: #4D4D4D;
+transform: rotate(-90deg);
+
+
+/* Button
+
+To resize a button:
+1. Choose the &quot;button base&quot; component in it
+2. Change the horizontal resizing to &quot;fill container&quot;
+3. Select the button itself, and change its horizontal resizing to &quot;fixed width&quot;
+
+Big button for main actions
+*/
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+justify-content: center;
+align-items: center;
+padding: 0px;
+gap: 12px;
+
+position: absolute;
+width: 167px;
+height: 52px;
+left: 129px;
+top: 613px;
+
+/* Button shadow */
+filter: drop-shadow(4px 4px 6px rgba(0, 0, 0, 0.11));
+border-radius: 6px;
+
+
+/* Button base */
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+justify-content: center;
+align-items: center;
+padding: 0px 26px;
+gap: 12px;
+
+width: 167px;
+height: 52px;
+
+/* Brand purple / primary */
+background: #522974;
+border-radius: 6px;
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/* Text */
+
+width: 115px;
+height: 18px;
+
+font-family: 'Roboto';
+font-style: normal;
+font-weight: 500;
+font-size: 15px;
+line-height: 18px;
+/* identical to box height */
+text-align: center;
+
+/* Grey/grey-0 */
+color: #FFFFFF;
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/* Frame 3 */
+
+box-sizing: border-box;
+
+/* Auto layout */
+display: flex;
+flex-direction: column;
+justify-content: center;
+align-items: center;
+padding: 24px;
+gap: 24px;
+
+position: absolute;
+width: 391px;
+height: 227px;
+left: 17px;
+top: 705px;
+
+border: 1px solid rgba(0, 0, 0, 0.2);
+border-radius: 6px;
+
+
+/* Frame 2 */
+
+/* Auto layout */
+display: flex;
+flex-direction: column;
+align-items: flex-start;
+padding: 0px;
+gap: 14px;
+
+width: 320px;
+height: 65px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/* Result */
+
+width: 42px;
+height: 18px;
+
+font-family: 'Roboto';
+font-style: normal;
+font-weight: 400;
+font-size: 15px;
+line-height: 18px;
+/* identical to box height */
+text-align: center;
+
+/* Grey/grey-80 */
+color: #4D4D4D;
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/* 4 942,52 CZK */
+
+width: 169px;
+height: 33px;
+
+font-family: 'Roboto';
+font-style: normal;
+font-weight: 500;
+font-size: 28px;
+line-height: 33px;
+/* identical to box height */
+text-align: center;
+
+/* Grey/grey-90 */
+color: #141414;
+
+
+/* Inside auto layout */
+flex: none;
+order: 1;
+flex-grow: 0;
+
+
+/* Rectangle 2 */
+
+width: 343px;
+height: 1px;
+
+background: rgba(0, 0, 0, 0.2);
+
+/* Inside auto layout */
+flex: none;
+order: 1;
+align-self: stretch;
+flex-grow: 0;
+
+
+/* Frame 1 */
+
+/* Auto layout */
+display: flex;
+flex-direction: column;
+align-items: flex-start;
+padding: 0px;
+gap: 14px;
+
+width: 320px;
+height: 65px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 2;
+flex-grow: 0;
+
+
+/* Number of calculations made */
+
+width: 198px;
+height: 18px;
+
+font-family: 'Roboto';
+font-style: normal;
+font-weight: 400;
+font-size: 15px;
+line-height: 18px;
+/* identical to box height */
+text-align: center;
+
+/* Grey/grey-80 */
+color: #4D4D4D;
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/* 3 */
+
+width: 16px;
+height: 33px;
+
+font-family: 'Roboto';
+font-style: normal;
+font-weight: 500;
+font-size: 28px;
+line-height: 33px;
+/* identical to box height */
+text-align: center;
+
+/* Grey/grey-90 */
+color: #141414;
+
+
+/* Inside auto layout */
+flex: none;
+order: 1;
+flex-grow: 0;

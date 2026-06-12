@@ -1,0 +1,48 @@
+{
+	"permissions": {
+		"allow": [
+			"Bash(npm run dev)",
+			"Bash(npm test:*)",
+			"Bash(npm run test:*)",
+			"Bash(npm run verify:*)",
+			"Bash(npm run lint:*)",
+			"Bash(npm run db:init)",
+			"Bash(npm run setup)",
+			"Bash(npx tsc --noEmit)",
+			"Bash(npx vitest:*)",
+			"Bash(cd api && npm run verify:api)",
+			"Bash(cd web && npm run verify:web)",
+			"Bash(cd api && npx tsc --noEmit)",
+			"Bash(cd web && npx tsc --noEmit)",
+			"Bash(docker compose up:*)",
+			"Bash(docker compose ps:*)",
+			"Bash(git status)",
+			"Bash(git diff:*)",
+			"Bash(git log:*)"
+		],
+		"deny": [
+			"Read(.env)",
+			"Read(.env.*)",
+			"Read(**/.env)",
+			"Read(**/.env.*)",
+			"Bash(npx sst deploy:*)",
+			"Bash(npx sst remove:*)",
+			"Bash(npm run deploy)",
+			"Bash(npm run deploy:*)",
+			"Bash(git push:*)"
+		]
+	},
+	"hooks": {
+		"PostToolUse": [
+			{
+				"matcher": "Edit|Write",
+				"hooks": [
+					{
+						"type": "command",
+						"command": "cd \"$CLAUDE_PROJECT_DIR\" && status=0; for d in . api web; do if [ -f \"$d/tsconfig.json\" ]; then errs=$(cd \"$d\" && npx tsc --noEmit 2>&1 | head -20); if [ -n \"$errs\" ]; then echo \"[$d] typecheck:\" >&2; echo \"$errs\" >&2; status=2; fi; fi; done; exit $status"
+					}
+				]
+			}
+		]
+	}
+}

@@ -1,0 +1,21 @@
+# Secrets — never committed (AI_SETUP.md §7)
+.env
+.env.*
+!.env.example
+
+# Local AI permissions (personal approvals — only settings.json is committed)
+.claude/settings.local.json
+
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+coverage/
+
+# SST
+.sst/
+
+# OS / editor noise
+.DS_Store
+*.log

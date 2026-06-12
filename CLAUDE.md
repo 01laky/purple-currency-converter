@@ -1,28 +1,33 @@
 # Currency Conversion API — project rules
 
 ## Context
+
 The binding design and all decisions: docs/proposal.md. The AI process: docs/AI_SETUP.md.
 Stack: TypeScript, Fastify + Zod (fastify-type-provider-zod), DynamoDB (locally amazon/dynamodb-local), SST v4, Vitest.
 
 ## Commands
+
 - `cd api && npm run dev` — the API on :3000 (requires `npm run setup` once); `cd web && npm run dev` — the frontend on :5173
 - `npm run verify:api` (in api/) / `npm run verify:web` (in web/) — typecheck + lint + tests
 - `npx tsc --noEmit` — typecheck
 - `npx sst dev` / `npm run deploy` — AWS (NEVER trigger a deploy yourself, only on an explicit instruction)
 
 ## Architecture (do not change without discussion)
+
 - All the logic in `api/src/app.ts` (a pure Fastify app); `lambda.ts` and `server.ts` are ONLY thin adapters
 - The app reads configuration EXCLUSIVELY from env variables (STATS_TABLE, OER_API_KEY, DYNAMO_ENDPOINT)
 - Input validation: Zod schemas in `src/schemas.ts`, wired through the type provider — no manual validation in handlers
 - DynamoDB access only through `src/lib/dynamo.ts`
 
 ## Domain traps
+
 - Money: NEVER plain float arithmetic — compute explicitly, rounding defined and tested
 - Rates: the openexchangerates free plan has a USD-ONLY base → cross-rate (EUR→GBP = USDGBP/USDEUR), must be covered by a test
 - The rates cache: TTL 10 min; on an external API outage return the stale cache, not a 500
 - In-memory state does not survive on Lambda — statistics go ALWAYS to DynamoDB
- 
+
 ## Working rules
+
 1. **Tests never call the real openexchangerates API** — the rate provider is always mocked/replaced by a fixture in tests (the free plan = 1,000 req/month; network tests are flaky).
 2. **A bugfix starts with a failing test** that reproduces the bug — only then the fix.
 3. **The response of an external API is always parsed through a Zod schema and the fetch has a timeout.** Never assume the response shape; a failure of an external API must never end as a 500.
@@ -67,12 +72,14 @@ Stack: TypeScript, Fastify + Zod (fastify-type-provider-zod), DynamoDB (locally 
 28. **Tests live ALWAYS separately from the sources.** A dedicated `tests/` directory in the given part (API: `tests/`, frontend: `web/tests/`) whose structure mirrors `src/`. NEVER `*.test.ts` next to source files — no colocation.
 
 ## Conventions
+
 - Error responses: `{ error: { code, key, message, params? } }` — `key` = the i18n key for the FE, `message` ALWAYS in English (the assignment: meaningful errors); HTTP codes: 400 validation, 422 a business rule, 502 an external API outage
 - Every logic change = a test in the same commit
 - Before marking a task done: `npx tsc --noEmit` + `npm test` must pass
 - Commits: as descriptive as possible, in English — a concise subject + a body with the details of what changed and why (rules 21–22)
 
 ## Forbidden
+
 - Reading or printing `.env` / AWS credentials
 - `sst deploy`, `sst remove`, `git push` without an explicit instruction
 - Adding dependencies without a justification in the commit message

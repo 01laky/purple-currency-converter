@@ -1,6 +1,7 @@
 ---
 description: A critical review of the API code before a commit
 ---
+
 Do a critical review of the uncommitted changes (git diff + git diff --staged). Focus on:
 
 1. Money and rounding (floating point errors)

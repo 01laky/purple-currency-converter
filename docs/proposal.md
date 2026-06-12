@@ -8,17 +8,17 @@ Everything in this document is decided and binding; every material trade-off com
 
 A REST API for currency conversion with live exchange rates, caching, persistent statistics and a web frontend following the Figma design. Mapping to the assignment:
 
-| Assignment requirement | Solution | Version |
-|---|---|---|
-| Conversion API with live rates | `POST /api/convert` + openexchangerates.org | 0.3.0–0.5.0 |
-| Input validation + error handling | Zod schemas + a central error handler | 0.1.0–0.5.0 |
-| Rates cache | in-memory TTL 10 min + stale fallback | 0.3.0 |
-| Conversion statistics | DynamoDB (persistent, across clients) | 0.6.0 |
-| Tests | Vitest, unit + integration | every version |
-| Persistence (L2) | DynamoDB | 0.6.0 |
-| Web frontend (L2) | React + Vite following Figma | 0.9.0–0.10.0 |
-| Deploy + live URL ("bonus" in the assignment) | SST → AWS Lambda | 0.7.0–0.8.0 |
-| Infrastructure as Code ("bonus" in the assignment) | SST v4 (`sst.config.ts`) | 0.7.0 |
+| Assignment requirement                             | Solution                                    | Version       |
+| -------------------------------------------------- | ------------------------------------------- | ------------- |
+| Conversion API with live rates                     | `POST /api/convert` + openexchangerates.org | 0.3.0–0.5.0   |
+| Input validation + error handling                  | Zod schemas + a central error handler       | 0.1.0–0.5.0   |
+| Rates cache                                        | in-memory TTL 10 min + stale fallback       | 0.3.0         |
+| Conversion statistics                              | DynamoDB (persistent, across clients)       | 0.6.0         |
+| Tests                                              | Vitest, unit + integration                  | every version |
+| Persistence (L2)                                   | DynamoDB                                    | 0.6.0         |
+| Web frontend (L2)                                  | React + Vite following Figma                | 0.9.0–0.10.0  |
+| Deploy + live URL ("bonus" in the assignment)      | SST → AWS Lambda                            | 0.7.0–0.8.0   |
+| Infrastructure as Code ("bonus" in the assignment) | SST v4 (`sst.config.ts`)                    | 0.7.0         |
 
 Items marked "bonus in the assignment" are bonuses in the assignment's classification — in this design they are a full part of the implementation, not an optional add-on.
 
@@ -161,17 +161,17 @@ A unified shape **`{ "error": { "code", "key", "message", "params"? } }`**:
 
 - **`code`** (the `ErrorCode` enum) — programmatic handling and HTTP semantics
 - **`key`** — an i18n key into the texts from `/api/init` (e.g. `errors.validation.sameCurrency`); the frontend translates the message by the key in the selected language
-- **`message`** — **always in English**, the EN translation of the key with the params interpolated (e.g. "Currency XYZ is not supported"). Reason: the assignment asks for *meaningful error handling* — an API consumer without the frontend (Swagger, curl) must understand the error without a translation table. The frontend does not display `message` — it translates the `key`.
+- **`message`** — **always in English**, the EN translation of the key with the params interpolated (e.g. "Currency XYZ is not supported"). Reason: the assignment asks for _meaningful error handling_ — an API consumer without the frontend (Swagger, curl) must understand the error without a translation table. The frontend does not display `message` — it translates the `key`.
 - **`params`** (optional) — values for interpolation (e.g. `{ "code": "XYZ" }`)
 
-| HTTP | `code` | When |
-|---|---|---|
-| 400 | `VALIDATION_ERROR` | input shape error (Zod) — the `key` names the field and the reason, `params` the details |
-| 404 | `NOT_FOUND` | unknown route |
-| 422 | `UNSUPPORTED_CURRENCY` | the currency is not in the supported list (`params.code`) |
-| 429 | `RATE_LIMITED` | rate limit exceeded — 60 req/min per IP on `POST /api/convert` (§9) |
-| 500 | `INTERNAL_ERROR` | unexpected error — no stack trace and no internals in the response |
-| 502 | `RATE_PROVIDER_ERROR` | OER unavailable and the cache is empty |
+| HTTP | `code`                 | When                                                                                     |
+| ---- | ---------------------- | ---------------------------------------------------------------------------------------- |
+| 400  | `VALIDATION_ERROR`     | input shape error (Zod) — the `key` names the field and the reason, `params` the details |
+| 404  | `NOT_FOUND`            | unknown route                                                                            |
+| 422  | `UNSUPPORTED_CURRENCY` | the currency is not in the supported list (`params.code`)                                |
+| 429  | `RATE_LIMITED`         | rate limit exceeded — 60 req/min per IP on `POST /api/convert` (§9)                      |
+| 500  | `INTERNAL_ERROR`       | unexpected error — no stack trace and no internals in the response                       |
+| 502  | `RATE_PROVIDER_ERROR`  | OER unavailable and the cache is empty                                                   |
 
 - **Zod messages carry the i18n key directly** — the `message` in a Zod schema is a key (e.g. `errors.validation.amountTooManyDecimals`) and the central error handler passes it through into `key`. There are no English sentences in the schemas.
 - **The central error handler normalizes every error** into the shape above — including Fastify internals (404, 413 body over the limit, JSON parse errors). The API never returns a response outside this shape.
@@ -204,11 +204,11 @@ A unified shape **`{ "error": { "code", "key", "message", "params"? } }`**:
 
 One table, atomic counters, no event log:
 
-| pk | sk | attributes |
-|---|---|---|
-| `STATS` | `GLOBAL` | `conversionCount: N`, `totalEurCents: N` |
-| `STATS` | `TARGET#EUR` | `count: N` |
-| `STATS` | `TARGET#GBP` | `count: N` |
+| pk      | sk           | attributes                               |
+| ------- | ------------ | ---------------------------------------- |
+| `STATS` | `GLOBAL`     | `conversionCount: N`, `totalEurCents: N` |
+| `STATS` | `TARGET#EUR` | `count: N`                               |
+| `STATS` | `TARGET#GBP` | `count: N`                               |
 
 - **Write** (per conversion): one **`TransactWriteItems`** transaction with two `Update ADD` operations (the global counter + the target-currency counter) — both succeed or neither does; `conversionCount` can never drift from the sum of the target counters. No read before write.
 - **Read** (`/api/stats`): one Query `pk = STATS` → the global values + the maximum of the `TARGET#` items (there are at most ~170 currencies). **Tie-break:** on equal counts the alphabetically first currency wins — the API always answers the same state the same way (determinism = testability; the assignment does not address ties, so the design does).
@@ -223,17 +223,17 @@ One test runner (Vitest), but **separate test suites** — the backend and the f
 
 ### Backend tests
 
-| Type | Tool | Covers |
-|---|---|---|
-| Unit | Vitest | `roundMoney` (boundary values), cross-rate, cache TTL/stale logic (fake time) |
-| API (integration) | Vitest + `app.inject()` | endpoints: happy path + every error code; the OER client is always mocked (rule 1) |
-| DB integration | Vitest + dynamodb-local (in-memory variant) | writing/reading statistics against the real DynamoDB API |
+| Type              | Tool                                        | Covers                                                                             |
+| ----------------- | ------------------------------------------- | ---------------------------------------------------------------------------------- |
+| Unit              | Vitest                                      | `roundMoney` (boundary values), cross-rate, cache TTL/stale logic (fake time)      |
+| API (integration) | Vitest + `app.inject()`                     | endpoints: happy path + every error code; the OER client is always mocked (rule 1) |
+| DB integration    | Vitest + dynamodb-local (in-memory variant) | writing/reading statistics against the real DynamoDB API                           |
 
 ### Frontend tests
 
-| Type | Tool | Covers |
-|---|---|---|
-| Component | Vitest + React Testing Library (jsdom) | the converter: form validation, result display; statistics including the empty state |
+| Type              | Tool                                      | Covers                                                                                  |
+| ----------------- | ----------------------------------------- | --------------------------------------------------------------------------------------- |
+| Component         | Vitest + React Testing Library (jsdom)    | the converter: form validation, result display; statistics including the empty state    |
 | States and errors | Vitest + RTL, the generated client mocked | mapping the error model to the UI (`key` → translation), loading states, the boot phase |
 
 Frontend tests never call the real API — the generated axios client is mocked; the contract is held by the OpenAPI specification. Dev dependencies: `@testing-library/react`, `@testing-library/user-event`, `jsdom`.
@@ -368,11 +368,11 @@ Figma "Purple case" → the Main page contains the Web and Mobile variant of the
 
 ## 11. Approved dependencies (rule 8)
 
-| Part | Runtime | Dev |
-|---|---|---|
-| `api/` | fastify, zod, fastify-type-provider-zod, @fastify/swagger, @fastify/swagger-ui, @fastify/cors, @fastify/helmet, @fastify/rate-limit, **@fastify/aws-lambda**, @aws-sdk/client-dynamodb, @aws-sdk/lib-dynamodb | typescript, tsx, vitest, @types/node, **@types/aws-lambda**, prettier, eslint, **@eslint/js**, typescript-eslint, eslint-config-prettier |
-| `web/` | react, react-dom, axios, react-hook-form, i18next, react-i18next, @fontsource/roboto | vite, @vitejs/plugin-react, typescript, @types/react, @types/react-dom, vitest, @testing-library/react, @testing-library/user-event, jsdom, sass, orval, prettier, eslint, @eslint/js, typescript-eslint, eslint-config-prettier |
-| `deploy/` | — | sst |
+| Part      | Runtime                                                                                                                                                                                                       | Dev                                                                                                                                                                                                                              |
+| --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `api/`    | fastify, zod, fastify-type-provider-zod, @fastify/swagger, @fastify/swagger-ui, @fastify/cors, @fastify/helmet, @fastify/rate-limit, **@fastify/aws-lambda**, @aws-sdk/client-dynamodb, @aws-sdk/lib-dynamodb | typescript, tsx, vitest, @types/node, **@types/aws-lambda**, prettier, eslint, **@eslint/js**, typescript-eslint, eslint-config-prettier                                                                                         |
+| `web/`    | react, react-dom, axios, react-hook-form, i18next, react-i18next, @fontsource/roboto                                                                                                                          | vite, @vitejs/plugin-react, typescript, @types/react, @types/react-dom, vitest, @testing-library/react, @testing-library/user-event, jsdom, sass, orval, prettier, eslint, @eslint/js, typescript-eslint, eslint-config-prettier |
+| `deploy/` | —                                                                                                                                                                                                             | sst                                                                                                                                                                                                                              |
 
 Anything beyond the table requires approval (rule 8).
 
@@ -382,12 +382,12 @@ The project is developed in collaboration with AI (Claude Code, the Claude Fable
 
 ### Configuration layers
 
-| Layer | File(s) | Role |
-|---|---|---|
-| Rules | `CLAUDE.md` (28 working rules) | the contract with the AI — loaded every session |
-| Guardrails | `.claude/settings.json` | machine-enforced boundaries (permissions, hooks) |
-| Commands | `.claude/commands/` | procedures triggered by the human (`/name`) |
-| Skills | `.claude/skills/` | procedures the AI picks up automatically by task type |
+| Layer      | File(s)                        | Role                                                  |
+| ---------- | ------------------------------ | ----------------------------------------------------- |
+| Rules      | `CLAUDE.md` (28 working rules) | the contract with the AI — loaded every session       |
+| Guardrails | `.claude/settings.json`        | machine-enforced boundaries (permissions, hooks)      |
+| Commands   | `.claude/commands/`            | procedures triggered by the human (`/name`)           |
+| Skills     | `.claude/skills/`              | procedures the AI picks up automatically by task type |
 
 ### Rules (CLAUDE.md — a selection of the key ones)
 
@@ -414,7 +414,7 @@ The project is developed in collaboration with AI (Claude Code, the Claude Fable
 
 ### Future vision
 
-The assignment's reflection question — *"If AI writes the code, what does a great engineer actually do?"* — is answered by a dedicated **Future vision section near the top of the README** (right below the badges), so the evaluator reads it before the technical content. It is written in v1.0.0, in English. The core of the answer: when the AI writes the code, the great engineer finally gets to design the architecture they always dreamed of, instead of spending 95 % of their time typing code — the engineer decides WHAT to build and verifies that it is right (the design, the constraints, the rules, the review and the quality gates); this repo's AI setup is the practical demonstration of that role.
+The assignment's reflection question — _"If AI writes the code, what does a great engineer actually do?"_ — is answered by a dedicated **Future vision section near the top of the README** (right below the badges), so the evaluator reads it before the technical content. It is written in v1.0.0, in English. The core of the answer: when the AI writes the code, the great engineer finally gets to design the architecture they always dreamed of, instead of spending 95 % of their time typing code — the engineer decides WHAT to build and verifies that it is right (the design, the constraints, the rules, the review and the quality gates); this repo's AI setup is the practical demonstration of that role.
 
 ## 13. Process
 
@@ -422,27 +422,27 @@ Every version of the roadmap from v0.1.0 onward has a prompt in [`/prompt`](../p
 
 ## 14. Roadmap 0.0.0 → 1.0.0
 
-| Version | Content | Assignment level |
-|---|---|---|
-| **0.0.0** | AI configuration: CLAUDE.md (working rules 1–28), `.claude/` (permissions, hook, commands, skills), `docs/` + the proposal, the `prompt/` process, AI_DIARY.md | — (process) |
-| **0.1.0** | Project skeleton: TypeScript (strict), Fastify + the Zod type provider, `GET /health`, the central error handler + the error model, Swagger `/docs`, Vitest, docker-compose (dynamodb-local) + `db:init`, env configuration (`--env-file`), tooling (Prettier tabs, ESLint, Node 22 pinning, `.editorconfig`), `npm run setup`, GitHub Actions CI, CHANGELOG | — |
-| **0.2.0** | i18n and `GET /api/init`: EN/CS/SK translations in `api/src/i18n/`, ETag + 304 revalidation, translation parity as a test | — |
-| **0.3.0** | The rate provider: the OER client (5 s timeout, Zod parsing), the TTL 10 min cache + the stale fallback, the cross-rate through USD, injected clock | L1 |
-| **0.4.0** | `GET /api/currencies`: the intersection of rates and names, the server cache, `Cache-Control`, the supported-currency list | L1 |
-| **0.5.0** | Conversion: `POST /api/convert` — `roundMoney()`, validations (amount, `from ≠ to`, supported currencies), `rateTimestamp`, error codes 400/422/502 | L1 |
-| **0.6.0** | Statistics: DynamoDB counters (`TransactWriteItems`, retry ×3, cents, the tie-break), the EUR conversion, `GET /api/stats` | L1 + L2 persistence |
-| **0.7.0** | SST: `deploy/` (the config, secrets), the lambda adapter, the Lambda parameters (§8), verification via `sst dev` | "bonus" in the assignment — IaC |
-| **0.8.0** | The production deploy (the live URL) + the README setup guide — **Level 1 + the bonuses complete** | "bonus" in the assignment — deploy |
-| **0.9.0** | The frontend base: the monorepo move (`api/` + `web/`), Vite/React, the SCSS tokens from Figma, the generated API client, the boot (init + currencies), the conversion form (react-hook-form) | L2 |
-| **0.10.0** | The frontend completion: the statistics in the Result card, the language changer, the error/loading states, a11y, the frontend deploy (StaticSite + Router, same-origin) | L2 |
-| **0.11.0** | Hardening: the rate limit + reserved concurrency (§9), edge cases, the e2e pass, the documentation review (syncing AI_SETUP.md) | — |
-| **1.0.0** | Submission finalization: the AI diary complete, the future vision (the README-top section — §12), the time budget (summed from the changelog/diary datetimes), the final README | submission |
+| Version    | Content                                                                                                                                                                                                                                                                                                                                                      | Assignment level                   |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------- |
+| **0.0.0**  | AI configuration: CLAUDE.md (working rules 1–28), `.claude/` (permissions, hook, commands, skills), `docs/` + the proposal, the `prompt/` process, AI_DIARY.md                                                                                                                                                                                               | — (process)                        |
+| **0.1.0**  | Project skeleton: TypeScript (strict), Fastify + the Zod type provider, `GET /health`, the central error handler + the error model, Swagger `/docs`, Vitest, docker-compose (dynamodb-local) + `db:init`, env configuration (`--env-file`), tooling (Prettier tabs, ESLint, Node 22 pinning, `.editorconfig`), `npm run setup`, GitHub Actions CI, CHANGELOG | —                                  |
+| **0.2.0**  | i18n and `GET /api/init`: EN/CS/SK translations in `api/src/i18n/`, ETag + 304 revalidation, translation parity as a test                                                                                                                                                                                                                                    | —                                  |
+| **0.3.0**  | The rate provider: the OER client (5 s timeout, Zod parsing), the TTL 10 min cache + the stale fallback, the cross-rate through USD, injected clock                                                                                                                                                                                                          | L1                                 |
+| **0.4.0**  | `GET /api/currencies`: the intersection of rates and names, the server cache, `Cache-Control`, the supported-currency list                                                                                                                                                                                                                                   | L1                                 |
+| **0.5.0**  | Conversion: `POST /api/convert` — `roundMoney()`, validations (amount, `from ≠ to`, supported currencies), `rateTimestamp`, error codes 400/422/502                                                                                                                                                                                                          | L1                                 |
+| **0.6.0**  | Statistics: DynamoDB counters (`TransactWriteItems`, retry ×3, cents, the tie-break), the EUR conversion, `GET /api/stats`                                                                                                                                                                                                                                   | L1 + L2 persistence                |
+| **0.7.0**  | SST: `deploy/` (the config, secrets), the lambda adapter, the Lambda parameters (§8), verification via `sst dev`                                                                                                                                                                                                                                             | "bonus" in the assignment — IaC    |
+| **0.8.0**  | The production deploy (the live URL) + the README setup guide — **Level 1 + the bonuses complete**                                                                                                                                                                                                                                                           | "bonus" in the assignment — deploy |
+| **0.9.0**  | The frontend base: the monorepo move (`api/` + `web/`), Vite/React, the SCSS tokens from Figma, the generated API client, the boot (init + currencies), the conversion form (react-hook-form)                                                                                                                                                                | L2                                 |
+| **0.10.0** | The frontend completion: the statistics in the Result card, the language changer, the error/loading states, a11y, the frontend deploy (StaticSite + Router, same-origin)                                                                                                                                                                                     | L2                                 |
+| **0.11.0** | Hardening: the rate limit + reserved concurrency (§9), edge cases, the e2e pass, the documentation review (syncing AI_SETUP.md)                                                                                                                                                                                                                              | —                                  |
+| **1.0.0**  | Submission finalization: the AI diary complete, the future vision (the README-top section — §12), the time budget (summed from the changelog/diary datetimes), the final README                                                                                                                                                                              | submission                         |
 
 Milestones: **0.8.0 = a submittable Level 1** (if time ran out, this is where to cut), **1.0.0 = the full Level 2 submission**.
 
 ## 15. Out of scope (consciously)
 
-Multi-region, CD (automatic deploys from CI), API Gateway throttling/WAF — the README mentions them as "next steps", they are not implemented. Authentication is not a "next step" — it will not exist at all (§9). Rate limiting IS in scope (§9, the hardening version). CI (typecheck + lint + tests on push/PR) IS in scope from v0.2.0.
+Multi-region, CD (automatic deploys from CI), API Gateway throttling/WAF — the README mentions them as "next steps", they are not implemented. Authentication is not a "next step" — it will not exist at all (§9). Rate limiting IS in scope (§9, the hardening version). CI (typecheck + lint + tests on push/PR) IS in scope from v0.1.0.
 
 ## Backlog
 

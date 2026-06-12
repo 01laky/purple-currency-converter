@@ -1,0 +1,121 @@
+{
+	"openapi": "3.0.3",
+	"info": {
+		"title": "Currency Conversion API",
+		"description": "Currency conversion with live exchange rates — Purple LAB case study.",
+		"version": "0.1.0"
+	},
+	"components": {
+		"schemas": {}
+	},
+	"paths": {
+		"/health": {
+			"get": {
+				"summary": "Instance diagnostics",
+				"tags": [
+					"system"
+				],
+				"description": "Version, process uptime and the age of the rates cache of the responding instance. ratesCacheAge is null before the first rates fetch (the cache exists from v0.3.0).",
+				"responses": {
+					"200": {
+						"description": "Default Response",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"ok": {
+											"type": "boolean",
+											"enum": [
+												true
+											],
+											"description": "Liveness flag — always true when the instance responds"
+										},
+										"version": {
+											"type": "string",
+											"description": "The application version from package.json"
+										},
+										"uptime": {
+											"type": "number",
+											"description": "Process uptime in seconds (per instance on Lambda)"
+										},
+										"ratesCacheAge": {
+											"nullable": true,
+											"description": "Age of the rates cache in seconds; null before the first fetch (the cache exists from v0.3.0)",
+											"type": "number"
+										}
+									},
+									"required": [
+										"ok",
+										"version",
+										"uptime",
+										"ratesCacheAge"
+									],
+									"additionalProperties": false
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Default Response",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"error": {
+											"type": "object",
+											"properties": {
+												"code": {
+													"type": "string",
+													"enum": [
+														"VALIDATION_ERROR",
+														"NOT_FOUND",
+														"INTERNAL_ERROR"
+													],
+													"description": "Programmatic error code"
+												},
+												"key": {
+													"type": "string",
+													"description": "i18n key for the frontend (translations arrive via GET /api/init in v0.2.0)"
+												},
+												"message": {
+													"type": "string",
+													"description": "Human-readable message, always in English"
+												},
+												"params": {
+													"description": "Interpolation values for the i18n key",
+													"type": "object",
+													"additionalProperties": {
+														"anyOf": [
+															{
+																"type": "string"
+															},
+															{
+																"type": "number"
+															}
+														]
+													}
+												}
+											},
+											"required": [
+												"code",
+												"key",
+												"message"
+											],
+											"additionalProperties": false
+										}
+									},
+									"required": [
+										"error"
+									],
+									"additionalProperties": false
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}

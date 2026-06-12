@@ -14,10 +14,10 @@ Source of truth: docs/proposal.md §6 (the data model) and §5 (money). The Dyna
 
 ## The data model (immutable)
 
-| pk | sk | attributes |
-|---|---|---|
-| `STATS` | `GLOBAL` | `conversionCount: N`, `totalEurCents: N` |
-| `STATS` | `TARGET#<CURRENCY>` | `count: N` |
+| pk      | sk                  | attributes                               |
+| ------- | ------------------- | ---------------------------------------- |
+| `STATS` | `GLOBAL`            | `conversionCount: N`, `totalEurCents: N` |
+| `STATS` | `TARGET#<CURRENCY>` | `count: N`                               |
 
 ## Writing a conversion
 

@@ -62,3 +62,13 @@ Record template:
 **My intervention:** None during the implementation itself — the prompt was specific enough that the AI worked through the checkbox list without a single question. I reviewed the CS/SK translations it drafted (they were correct).
 
 **Lesson:** A precise prompt turns the implementation into verification — the discussion belongs at the prompt stage, not the coding stage. And writing the full key catalog up front (including keys for codes that do not exist yet) meant zero schema churn is waiting for v0.3.0–0.5.0.
+
+## [2026-06-12 05:58] — v0.3.0: the AI caught itself violating a rule
+
+**Context:** Implementing `prompt/v0.3.0.md` — the rates module: the OER client, the generic TTL cache with the stale fallback and the deduplication, the cross-rate provider, `/health` wired to the real cache age.
+
+**What happened:** The most interesting moment was self-correction: the AI wrote `fetchFn as unknown as FetchFn` into a test harness, then flagged it ITSELF in the very next step — rule 23 forbids `as` casts and the lint would have failed — and replaced the cast with the correct insight that a zero-argument function is directly assignable to the fetch signature (the cast was never needed; it was a reflex, not a necessity). Beyond that, the version went smoothly: the prompt's two scope decisions (the 502 mapping deferred to 0.4.0, `rateTimestamp` = the cache's `fetchedAt`) translated directly into code; the TTL/stale/dedup behavior is tested entirely under fake time through the injected clock — no sleeps, no flakes, 19 new tests in ~300 ms; and the v0.1.0 health test stayed green untouched while `/health` switched from a hardcoded `null` to the real cache age (rule 29 again — the wiring honored the existing contract: no fetch happens, so the age IS null).
+
+**My intervention:** None — I reviewed the diff and the test scenarios against the prompt.
+
+**Lesson:** The "no casts" rule works best as a forcing function: the moment a cast feels necessary, the type design is wrong somewhere — and removing the cast usually reveals the simpler correct typing. Also: injected clocks turn the hardest-to-test logic (TTL, staleness) into the fastest tests in the suite.

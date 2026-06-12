@@ -29,8 +29,9 @@
 
 	@include m.mobile {
 		width: t.$card-width-mobile;
-		// the page provides the shared 17px gutter — the card just fills it
-		max-width: 100%;
+		// viewport-based, NOT percentage: the form wrapper is shrink-to-fit, so 100% would
+		// not constrain anything and the card overflowed the gutter (caught live)
+		max-width: calc(100vw - 34px);
 		padding: t.$card-padding-mobile;
 	}
 }

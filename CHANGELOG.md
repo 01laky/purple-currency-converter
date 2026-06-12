@@ -4,6 +4,18 @@ All notable changes to this project are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html). Every entry carries the datetime the version was closed — together with the AI_DIARY.md datetimes it is the source of the submission time budget (rule 14).
 
+## [0.5.0] — 2026-06-12 12:37
+
+### Added
+
+- **`POST /api/convert`** — the conversion with the live cross-rate through the USD base: `rate` in full precision (verifiable math), `result` as the only rounded field, `rateTimestamp` with the §3 semantics (the rates-fetch time, not the conversion moment) validated as ISO 8601 in the contract; currency codes case-insensitive, normalized to uppercase.
+- **`roundMoney()` (`src/lib/money.ts`)** — the single rounding place of the system: half-up to 2 decimal places computed from the **decimal string** via BigInt cents, never float multiplication (`1.005` rounds UP — the trap the naive `Math.round(x*100)/100` fails); whole numbers pass through (no decimal point in `toString()`); sub-1e-6 values round to the honest 0; non-finite, negative and oversized exponential inputs throw.
+- **The conversion service (`src/conversion/`)** — both currencies validated against the ACTUAL supported list (the keys of the cached rates, rule 5); an unknown code → 422 `UNSUPPORTED_CURRENCY` with `params.code` and the interpolated message.
+- **The Zod-key passthrough** — the central handler detects schema failures via `hasZodFastifySchemaValidationErrors` and passes `error.validation[0].message` through as the i18n `key` (the schema messages ARE keys, §3); unknown/default Zod messages fall back to the generic `invalidRequest` key instead of crashing the lookup.
+- **The validation catalog live** — `amountNotPositive`, `amountTooLarge` (> 1e12), `amountTooManyDecimals` (a string-based decimal check, no float arithmetic), `invalidCurrencyCode` (`/^[A-Za-z]{3}$/`, not a length check), `sameCurrency` (after the uppercase normalization — `eur`/`EUR` is the same currency).
+- **The honest zero** — a result may round to 0.00 (e.g. 0.01 of a weak currency into a strong one); decided with the human and covered by tests at the unit, service and API level.
+- **Tests** — 29 new (80 total): the `roundMoney` boundary catalog (1.005, 0.005, 2.675, carries, whole numbers, long expansions, the throwing branches), the service math and error paths, and the full API validation catalog — every key triggered over HTTP, the 422 with `params.code`, the 502, the lowercase→UPPERCASE normalization and the OpenAPI presence.
+
 ## [0.4.0] — 2026-06-12 11:03
 
 ### Added
@@ -67,6 +79,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 - **AI collaboration diary (`AI_DIARY.md`)** — created on day one, with the record template in the file header.
 - **Repo hygiene (`.gitignore`)** — secrets (`.env*` except `.env.example`), local AI permissions (`.claude/settings.local.json`), dependencies and build outputs.
 
+[0.5.0]: https://github.com/01laky/purple-currency-converter/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/01laky/purple-currency-converter/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/01laky/purple-currency-converter/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/01laky/purple-currency-converter/compare/v0.1.0...v0.2.0

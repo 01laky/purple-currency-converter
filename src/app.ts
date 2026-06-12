@@ -5,12 +5,16 @@ import swaggerUi from '@fastify/swagger-ui';
 import fastify from 'fastify';
 import type { FastifyError, FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import {
+	hasZodFastifySchemaValidationErrors,
 	jsonSchemaTransform,
 	serializerCompiler,
 	validatorCompiler,
 } from 'fastify-type-provider-zod';
 import type { ZodTypeProvider } from 'fastify-type-provider-zod';
 import pkg from '../package.json' with { type: 'json' };
+import { UnsupportedCurrencyError } from './conversion/errors.js';
+import { convertAmount } from './conversion/service.js';
+import type { ConvertResult } from './conversion/types.js';
 import { LANGUAGES } from './i18n/constants.js';
 import { TRANSLATIONS, formatEnglishMessage } from './i18n/loader.js';
 import { CURRENCIES_CACHE_CONTROL } from './lib/constants.js';
@@ -20,12 +24,35 @@ import { RateProviderUnavailableError } from './rates/errors.js';
 import { createRatesProvider } from './rates/provider.js';
 import type { RatesProvider } from './rates/types.js';
 import {
+	convertRequestSchema,
+	convertResponseSchema,
 	currenciesResponseSchema,
 	errorResponseSchema,
 	healthResponseSchema,
 	initResponseSchema,
 } from './schemas.js';
-import type { CurrenciesResponse, HealthResponse, InitResponse } from './schemas.js';
+import type {
+	ConvertRequest,
+	CurrenciesResponse,
+	HealthResponse,
+	InitResponse,
+} from './schemas.js';
+
+// ErrorKey values for the Zod-key passthrough guard — schema messages ARE keys (§3)
+const ERROR_KEY_VALUES: readonly string[] = Object.values(ErrorKey);
+
+/**
+ * @name isErrorKey
+ *
+ * @description Type guard — whether a Zod issue message is one of the catalog keys. Zod's own
+ * default messages (e.g. a type mismatch) are English sentences, not keys — those fall back to
+ * the generic errors.validation.invalidRequest instead of crashing the message lookup.
+ *
+ * @param {string} value the Zod issue message
+ *
+ * @returns {boolean} true when the message is a known ErrorKey
+ */
+const isErrorKey = (value: string): value is ErrorKey => ERROR_KEY_VALUES.includes(value);
 
 const INIT_RESPONSE: InitResponse = { languages: [...LANGUAGES], translations: TRANSLATIONS };
 
@@ -115,10 +142,14 @@ const notFoundHandler = async (_request: FastifyRequest, reply: FastifyReply): P
  * @name errorHandler
  *
  * @description The central error handler (proposal §3). Normalizes every error into the unified
- * shape: an unreachable rate provider (no stale copy) becomes 502 RATE_PROVIDER_ERROR; Fastify
- * 4xx internals (JSON parse, body over the limit, content type) become VALIDATION_ERROR with
- * the original status; anything else is a 500 INTERNAL_ERROR with no internals in the
- * response — the full error goes into the log with the request id (rule 24).
+ * shape: an unsupported currency becomes 422 UNSUPPORTED_CURRENCY with params.code; an
+ * unreachable rate provider (no stale copy) becomes 502 RATE_PROVIDER_ERROR; a Zod schema
+ * failure (detected via hasZodFastifySchemaValidationErrors) becomes 400 VALIDATION_ERROR with
+ * the key taken from error.validation[0].message — the schema message IS the i18n key (§3);
+ * remaining Fastify 4xx internals (JSON parse, body over the limit, content type) become
+ * VALIDATION_ERROR with the generic invalidRequest key and the original status; anything else
+ * is a 500 INTERNAL_ERROR with no internals in the response — the full error goes into the log
+ * with the request id (rule 24).
  *
  * @param {FastifyError} error the thrown error
  * @param {FastifyRequest} request the request being served
@@ -131,10 +162,27 @@ const errorHandler = async (
 	request: FastifyRequest,
 	reply: FastifyReply,
 ): Promise<void> => {
+	if (error instanceof UnsupportedCurrencyError) {
+		await reply.status(422).send(
+			buildErrorBody(ErrorCode.UNSUPPORTED_CURRENCY, ErrorKey.UNSUPPORTED_CURRENCY, {
+				code: error.code,
+			}),
+		);
+		return;
+	}
 	if (error instanceof RateProviderUnavailableError) {
 		await reply
 			.status(502)
 			.send(buildErrorBody(ErrorCode.RATE_PROVIDER_ERROR, ErrorKey.RATE_PROVIDER));
+		return;
+	}
+	if (hasZodFastifySchemaValidationErrors(error)) {
+		const issueMessage = error.validation[0]?.message;
+		const key =
+			issueMessage !== undefined && isErrorKey(issueMessage)
+				? issueMessage
+				: ErrorKey.VALIDATION_INVALID_REQUEST;
+		await reply.status(400).send(buildErrorBody(ErrorCode.VALIDATION_ERROR, key));
 		return;
 	}
 	const statusCode = error.statusCode ?? 500;
@@ -183,6 +231,23 @@ const createCurrenciesHandler =
 		void reply.header('cache-control', CURRENCIES_CACHE_CONTROL);
 		return { currencies: await ratesProvider.getCurrencies() };
 	};
+
+/**
+ * @name createConvertHandler
+ *
+ * @description Builds the POST /api/convert handler (proposal §3/§5): the body arrives
+ * validated and normalized by the Zod schema; the service validates the currencies against
+ * the supported list, fetches the full-precision cross-rate and rounds the result exactly
+ * once.
+ *
+ * @param {RatesProvider} ratesProvider the provider serving the rates
+ *
+ * @returns {(request: FastifyRequest<{ Body: ConvertRequest }>) => Promise<ConvertResult>} the route handler
+ */
+const createConvertHandler =
+	(ratesProvider: RatesProvider) =>
+	async (request: FastifyRequest<{ Body: ConvertRequest }>): Promise<ConvertResult> =>
+		convertAmount(request.body, ratesProvider);
 
 /**
  * @name initHandler
@@ -292,6 +357,32 @@ export const buildApp = async (deps?: BuildAppDeps): Promise<FastifyInstance> =>
 			},
 		},
 		createCurrenciesHandler(ratesProvider),
+	);
+
+	typed.post(
+		'/api/convert',
+		{
+			schema: {
+				summary: 'Convert an amount between two currencies',
+				description:
+					'Converts the amount using the live cross-rate through the USD base. The rate is ' +
+					'returned in FULL precision; result is the only rounded field (half-up, 2 decimal ' +
+					'places). rateTimestamp is the time the rates were fetched from the provider, NOT ' +
+					'the moment of the conversion — under the stale fallback it honestly carries the ' +
+					'older time. Currency codes are case-insensitive and normalized to uppercase; the ' +
+					'supported set is the same the /api/currencies endpoint lists.',
+				tags: ['conversion'],
+				body: convertRequestSchema,
+				response: {
+					200: convertResponseSchema,
+					400: errorResponseSchema,
+					422: errorResponseSchema,
+					500: errorResponseSchema,
+					502: errorResponseSchema,
+				},
+			},
+		},
+		createConvertHandler(ratesProvider),
 	);
 
 	typed.get(

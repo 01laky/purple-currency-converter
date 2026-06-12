@@ -102,3 +102,13 @@ Record template:
 **My intervention:** All seven points written into the prompt before a single line of v0.5.0 code; the AI's two nuances accepted. I also decided the one open question the AI raised with the draft — may a conversion result round to 0.00 (0.01 JPY → EUR ≈ 0.00006)? **Keep the honest zero:** the rate in full precision keeps the response verifiable, the assignment defines no minimum result, and a floor would be an invented business rule.
 
 **Lesson:** A prompt for money code deserves the same review depth as money code. Naming exact APIs, exact regexes and exact edge cases in the prompt removes the freedom where freedom is risk — the implementation becomes transcription, and the review becomes verification.
+
+## [2026-06-12 12:37] — v0.5.0: the AI deviated from the prompt — and was right to
+
+**Context:** Implementing `prompt/v0.5.0.md` — `roundMoney`, the conversion service, the validation catalog, the Zod-key passthrough. The prompt was the most precise one yet (my seven refinements), so the implementation was mostly transcription — with one notable exception.
+
+**What happened:** The prompt said exponential-notation inputs to `roundMoney` THROW. During the implementation the AI noticed this contradicts my own honest-zero decision: `Number.toString()` switches to exponential below 1e-6, and a legitimate tiny conversion (0.01 at a rate of 0.00001 = 1e-7) would have CRASHED with a 500 instead of rounding to the honest 0.00. The AI added a guard — values below 1e-6 return 0 before the string parsing (still no float multiplication; everything under 0.005 rounds to 0 anyway) — kept the throw for oversized exponentials (1e21, unreachable through the validation), flagged the deviation openly in its summary, and covered both branches with tests. Also worth recording: all 80 tests (29 new) passed on the very first run — the first version of the project where that happened, on the version with the most edge cases.
+
+**My intervention:** Accepting the deviation — it implements the SPIRIT of my decision against the LETTER of the prompt, and the AI surfaced it instead of silently following either.
+
+**Lesson:** A prompt is a contract, but a contradiction between two of its clauses (throw on exponential vs the honest zero) has to be caught by whoever holds the full context at execution time — and the right behavior is exactly what happened: resolve it in favor of the decided intent, say so out loud, and prove both branches with tests.

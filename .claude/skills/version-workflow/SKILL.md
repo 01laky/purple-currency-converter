@@ -28,9 +28,9 @@ Source of truth: CLAUDE.md (rules 10, 13, 14, 15, 20, 22, 26) and docs/proposal.
 3. CHANGELOG.md: the `[X.Y.Z] — YYYY-MM-DD HH:MM` entry (the closing datetime — the time-budget source, rule 14), the Added/Changed/Fixed sections, bold feature names.
 4. The version in `package.json` = X.Y.Z; matching the README badge and the CHANGELOG (rule 15).
 5. A record into AI_DIARY.md — at least one moment from the version (rule 26); use the template from the file header, starting with the datetime (`YYYY-MM-DD HH:MM`).
-6. Propose the commit message (a Conventional Commits subject + a descriptive body, EN — rules 21/22). **Execute the commit only after explicit human approval (rule 20). The merge and the tag are done by the human (rule 16).**
+6. Propose the commit message (a Conventional Commits subject + a descriptive body, EN — rules 21/22). **Execute the commit only after explicit human approval (rule 20).** Then propose the pull-request title and description — **the push, the PR merge and the tag are done by the human (rule 16).**
 
 ## After finishing (remind the human)
 
-- The local merge into `main` + the local `git tag vX.Y.Z` — done by the human. **NEVER push** — the push and the GitHub releases happen once, at submission (rule 16).
+- The push of the `feature/` branch, the pull request into `main` and the `git tag vX.Y.Z` — done by the human (rule 16). **The AI never pushes.**
 - Start the new version in a new session with a clean context (rule 26).

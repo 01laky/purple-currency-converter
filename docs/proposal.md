@@ -418,7 +418,7 @@ The assignment's reflection question — *"If AI writes the code, what does a gr
 
 ## 13. Process
 
-Every version of the roadmap from v0.1.0 onward has a prompt in [`/prompt`](../prompt/) (format: [TEMPLATE.md](../prompt/TEMPLATE.md)) — an analysis, the solution design, checkbox tasks; the last task is always the tests of the given version. v0.0.0 has no prompt — it set up the process itself, including this mechanism. A version is finished only when all the checkboxes are ticked and the tests are green (rule 10). Every version = its own `feature/` branch (rule 13); **the whole git flow is local** — a merge into `main` + a local `vX.Y.Z` tag, nothing is pushed (rule 16); the push to the remote and the GitHub releases happen once, at submission. The prompts are written from this document — if an undecided question appears while writing a prompt, it is resolved before the implementation starts.
+Every version of the roadmap from v0.1.0 onward has a prompt in [`/prompt`](../prompt/) (format: [TEMPLATE.md](../prompt/TEMPLATE.md)) — an analysis, the solution design, checkbox tasks; the last task is always the tests of the given version. v0.0.0 has no prompt — it set up the process itself, including this mechanism. A version is finished only when all the checkboxes are ticked and the tests are green (rule 10). Every version = its own `feature/` branch (rule 13) that reaches `main` through a pull request; the AI prepares the commits and the PR title/description, while the push, the PR merge and the `vX.Y.Z` tag are done by the human (rule 16). The prompts are written from this document — if an undecided question appears while writing a prompt, it is resolved before the implementation starts.
 
 ## 14. Roadmap 0.0.0 → 1.0.0
 

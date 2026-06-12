@@ -42,3 +42,13 @@ Record template:
 **My intervention:** None needed for (1) and (2) — the guardrails handled themselves. For (3) the AI noticed the contradiction (compose reported a port conflict, yet db:init succeeded), listed the running containers, found the stale one, removed it and recycled the compose stack; I only watched.
 
 **Lesson:** A success message is not proof you talked to the right system — verify the target, not just the response. And the meta-lesson: the time invested into the v0.0.0 guardrail audit repaid itself in the first hour of real coding.
+
+## [2026-06-12 05:34] — v0.2.0: shaping the prompt is design review, not paperwork
+
+**Context:** The AI drafted `prompt/v0.2.0.md` (i18n + `GET /api/init`) from the proposal. Instead of approving it right away, I read it critically — and three design discussions came out of a one-page prompt before any code existed.
+
+**What happened:** (1) I added a hard policy: a missing translation must never fall back to the key, English, an empty string or a placeholder — it fails immediately. The AI confirmed it is the right call and pointed out a thing I did not know: i18next (planned for the frontend at 0.9.0) silently returns the key by default, so without this policy written down the anti-pattern would have walked in unnoticed. (2) I added a second policy: existing tests are a contract — never adapt an old test to new behavior unless the prompt requires it; the AI framed it well ("a failing old test means the change is wrong, not the test") and turned it into rule 29. (3) I challenged the ETag design ("SHA-256 of the response JSON — does that make sense or change it?"); the AI defended the original design with concrete reasons (content-addressed never lies, computed once per process so the cost is zero, version-based ETags lie in dev when texts change without a version bump) and I kept it unchanged.
+
+**My intervention:** Two additions written into the proposal, CLAUDE.md (rule 29) and the prompt; one challenge resolved by keeping the design. All before a single line of v0.2.0 code.
+
+**Lesson:** The prompt review is the cheapest design review there is — policies and challenges land in the spec while changing them costs nothing. And asking the AI "does this make sense or should we change it" is a legitimate design tool: a good answer defends the design with reasons, not with agreement.

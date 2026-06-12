@@ -2,11 +2,13 @@ export enum ErrorCode {
 	VALIDATION_ERROR = 'VALIDATION_ERROR',
 	NOT_FOUND = 'NOT_FOUND',
 	INTERNAL_ERROR = 'INTERNAL_ERROR',
+	RATE_PROVIDER_ERROR = 'RATE_PROVIDER_ERROR',
 }
 
 export enum ErrorKey {
 	NOT_FOUND = 'errors.notFound',
 	INTERNAL = 'errors.internal',
+	RATE_PROVIDER = 'errors.rateProvider',
 	VALIDATION_INVALID_REQUEST = 'errors.validation.invalidRequest',
 }
 

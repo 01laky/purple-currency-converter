@@ -1,8 +1,15 @@
 import { createCachedSource } from './cached-source.js';
-import { fetchLatestRates } from './client.js';
-import { RATES_TTL_MS } from './constants.js';
+import { fetchCurrencyNames, fetchLatestRates } from './client.js';
+import { NAMES_TTL_MS, RATES_TTL_MS } from './constants.js';
 import { RateProviderUnavailableError, UnknownRateCurrencyError } from './errors.js';
-import type { CachedValue, OerLatestRates, RatesProvider, RatesProviderDeps } from './types.js';
+import type {
+	CachedSource,
+	CachedValue,
+	CurrencyNames,
+	OerLatestRates,
+	RatesProvider,
+	RatesProviderDeps,
+} from './types.js';
 
 /**
  * @name resolveUsdRate
@@ -43,24 +50,42 @@ export const createRatesProvider = (deps?: RatesProviderDeps): RatesProvider => 
 		ttlMs: RATES_TTL_MS,
 		now,
 	});
+	const namesSource = createCachedSource<CurrencyNames>({
+		fetchFn: () => fetchCurrencyNames(deps?.client),
+		ttlMs: NAMES_TTL_MS,
+		now,
+	});
+
+	/**
+	 * @name getFromSource
+	 *
+	 * @description Reads a cached source; a completely unavailable upstream (failed fetch, no
+	 * stale copy) surfaces as RateProviderUnavailableError — the 502 of the error model.
+	 *
+	 * @param {CachedSource<T>} cachedSource the source to read
+	 *
+	 * @returns {Promise<CachedValue<T>>} the cached payload
+	 *
+	 * @throws {RateProviderUnavailableError} when nothing can be served at all
+	 */
+	const getFromSource = async <T>(cachedSource: CachedSource<T>): Promise<CachedValue<T>> => {
+		try {
+			return await cachedSource.get();
+		} catch (error) {
+			throw new RateProviderUnavailableError(error);
+		}
+	};
 
 	/**
 	 * @name getRates
 	 *
-	 * @description Returns the cached rates; a completely unavailable provider (failed fetch,
-	 * no stale copy) surfaces as RateProviderUnavailableError — the 502 of v0.4.0.
+	 * @description Returns the cached rates payload.
 	 *
 	 * @returns {Promise<CachedValue<OerLatestRates>>} the cached rates payload
 	 *
 	 * @throws {RateProviderUnavailableError} when no rates can be served at all
 	 */
-	const getRates = async (): Promise<CachedValue<OerLatestRates>> => {
-		try {
-			return await source.get();
-		} catch (error) {
-			throw new RateProviderUnavailableError(error);
-		}
-	};
+	const getRates = async (): Promise<CachedValue<OerLatestRates>> => getFromSource(source);
 
 	/**
 	 * @name getRate
@@ -97,5 +122,29 @@ export const createRatesProvider = (deps?: RatesProviderDeps): RatesProvider => 
 	const getSupportedCurrencies = async (): Promise<string[]> =>
 		Object.keys((await getRates()).value.rates);
 
-	return { getRate, getSupportedCurrencies, getCacheAgeSeconds: source.ageSeconds };
+	/**
+	 * @name getCurrencies
+	 *
+	 * @description The /api/currencies source (proposal §3): the INTERSECTION of the OER
+	 * currency names and the cached rates — only currencies that have a rate are returned, so
+	 * the list and the rates never diverge. Keys come sorted (deterministic responses). Both
+	 * sources keep their independent stale fallbacks.
+	 *
+	 * @returns {Promise<CurrencyNames>} the codes to display names map, sorted by code
+	 *
+	 * @throws {RateProviderUnavailableError} when either source can serve nothing at all
+	 */
+	const getCurrencies = async (): Promise<CurrencyNames> => {
+		const [names, rates] = await Promise.all([getFromSource(namesSource), getRates()]);
+		const currencies: CurrencyNames = {};
+		for (const code of Object.keys(names.value).sort()) {
+			const name = names.value[code];
+			if (name !== undefined && rates.value.rates[code] !== undefined) {
+				currencies[code] = name;
+			}
+		}
+		return currencies;
+	};
+
+	return { getRate, getSupportedCurrencies, getCurrencies, getCacheAgeSeconds: source.ageSeconds };
 };

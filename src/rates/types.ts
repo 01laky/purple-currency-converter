@@ -7,6 +7,8 @@ export type OerLatestRates = {
 	timestamp: number;
 };
 
+export type CurrencyNames = Record<string, string>;
+
 export type CachedValue<T> = {
 	value: T;
 	fetchedAt: number;
@@ -24,14 +26,14 @@ export type CachedSource<T> = {
 	ageSeconds: () => number | null;
 };
 
-export type FetchLatestRatesDeps = {
+export type OerClientDeps = {
 	fetchFn?: FetchFn;
 	timeoutMs?: number;
 };
 
 export type RatesProviderDeps = {
 	now?: Clock;
-	client?: FetchLatestRatesDeps;
+	client?: OerClientDeps;
 };
 
 export type RateQuote = {
@@ -42,5 +44,6 @@ export type RateQuote = {
 export type RatesProvider = {
 	getRate: (from: string, to: string) => Promise<RateQuote>;
 	getSupportedCurrencies: () => Promise<string[]>;
+	getCurrencies: () => Promise<CurrencyNames>;
 	getCacheAgeSeconds: () => number | null;
 };

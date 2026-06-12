@@ -3,7 +3,7 @@
 	"info": {
 		"title": "Currency Conversion API",
 		"description": "Currency conversion with live exchange rates — Purple LAB case study.",
-		"version": "0.3.0"
+		"version": "0.4.0"
 	},
 	"components": {
 		"schemas": {}
@@ -71,7 +71,160 @@
 													"enum": [
 														"VALIDATION_ERROR",
 														"NOT_FOUND",
-														"INTERNAL_ERROR"
+														"INTERNAL_ERROR",
+														"RATE_PROVIDER_ERROR"
+													],
+													"description": "Programmatic error code"
+												},
+												"key": {
+													"type": "string",
+													"description": "i18n key for the frontend (translations arrive via GET /api/init in v0.2.0)"
+												},
+												"message": {
+													"type": "string",
+													"description": "Human-readable message, always in English"
+												},
+												"params": {
+													"description": "Interpolation values for the i18n key",
+													"type": "object",
+													"additionalProperties": {
+														"anyOf": [
+															{
+																"type": "string"
+															},
+															{
+																"type": "number"
+															}
+														]
+													}
+												}
+											},
+											"required": [
+												"code",
+												"key",
+												"message"
+											],
+											"additionalProperties": false
+										}
+									},
+									"required": [
+										"error"
+									],
+									"additionalProperties": false
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/currencies": {
+			"get": {
+				"summary": "Supported currencies",
+				"tags": [
+					"conversion"
+				],
+				"description": "Currency codes mapped to display names for the conversion selects. The response is the INTERSECTION of the OER currency names and the cached rates — only currencies that have a rate are listed, so the list never diverges from what /api/convert accepts. Carries Cache-Control: public, max-age=3600.",
+				"responses": {
+					"200": {
+						"description": "Default Response",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"currencies": {
+											"type": "object",
+											"additionalProperties": {
+												"type": "string"
+											},
+											"description": "Supported currency codes mapped to display names — the intersection with the cached rates: only currencies that have a rate are listed"
+										}
+									},
+									"required": [
+										"currencies"
+									],
+									"additionalProperties": false
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Default Response",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"error": {
+											"type": "object",
+											"properties": {
+												"code": {
+													"type": "string",
+													"enum": [
+														"VALIDATION_ERROR",
+														"NOT_FOUND",
+														"INTERNAL_ERROR",
+														"RATE_PROVIDER_ERROR"
+													],
+													"description": "Programmatic error code"
+												},
+												"key": {
+													"type": "string",
+													"description": "i18n key for the frontend (translations arrive via GET /api/init in v0.2.0)"
+												},
+												"message": {
+													"type": "string",
+													"description": "Human-readable message, always in English"
+												},
+												"params": {
+													"description": "Interpolation values for the i18n key",
+													"type": "object",
+													"additionalProperties": {
+														"anyOf": [
+															{
+																"type": "string"
+															},
+															{
+																"type": "number"
+															}
+														]
+													}
+												}
+											},
+											"required": [
+												"code",
+												"key",
+												"message"
+											],
+											"additionalProperties": false
+										}
+									},
+									"required": [
+										"error"
+									],
+									"additionalProperties": false
+								}
+							}
+						}
+					},
+					"502": {
+						"description": "Default Response",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"error": {
+											"type": "object",
+											"properties": {
+												"code": {
+													"type": "string",
+													"enum": [
+														"VALIDATION_ERROR",
+														"NOT_FOUND",
+														"INTERNAL_ERROR",
+														"RATE_PROVIDER_ERROR"
 													],
 													"description": "Programmatic error code"
 												},
@@ -176,7 +329,8 @@
 													"enum": [
 														"VALIDATION_ERROR",
 														"NOT_FOUND",
-														"INTERNAL_ERROR"
+														"INTERNAL_ERROR",
+														"RATE_PROVIDER_ERROR"
 													],
 													"description": "Programmatic error code"
 												},

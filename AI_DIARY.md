@@ -72,3 +72,23 @@ Record template:
 **My intervention:** None — I reviewed the diff and the test scenarios against the prompt.
 
 **Lesson:** The "no casts" rule works best as a forcing function: the moment a cast feels necessary, the type design is wrong somewhere — and removing the cast usually reveals the simpler correct typing. Also: injected clocks turn the hardest-to-test logic (TTL, staleness) into the fastest tests in the suite.
+
+## [2026-06-12 11:03] — v0.4.0: the up-front investments started paying rent
+
+**Context:** Implementing `prompt/v0.4.0.md` — `GET /api/currencies` (the intersection of names and rates), the deferred `RATE_PROVIDER_ERROR` 502 mapping with its catalog test, and the `buildApp` DI seam.
+
+**What happened:** This version was mostly harvesting earlier decisions. The generic `createCachedSource<T>` from v0.3.0 took the currency names without a single change — the "generic on purpose" call proved itself. The `errors.rateProvider` translation had existed since v0.2.0 (the catalog landed complete back then), so completing the 502 error model touched zero i18n files and the parity test guarded it the whole time. The client refactor (one shared `fetchOerResource` pattern for both OER endpoints) kept all v0.3.0 client tests green untouched — rule 29 held through a refactor, not just through additions. The DI seam (`buildApp({ ratesProvider })`) made the route tests trivial: two app instances, one healthy and one throwing, no global fetch stubbing.
+
+**My intervention:** None during the implementation; I reviewed the diff. The two parameters I pinned in the prompt (names TTL = 1 hour aligned with max-age=3600; `/currencies.json` requested with the app_id — one client pattern, no bet on OER's tolerance) went in as written.
+
+**Lesson:** Architecture decisions are investments with a visible payback period: the generic cache paid off in one version, the complete i18n catalog in two. When the AI proposes "build it generic/complete now", the right question is not "do we need it now" but "is the version that needs it already on the roadmap".
+
+## [2026-06-12 12:10] — between v0.3.0 and v0.4.0: we caught each other's misses
+
+**Context:** Closing v0.3.0 and preparing v0.4.0 — two git-flow incidents in the space between versions, one caught by me, one by the AI.
+
+**What happened:** (1) The CI on the v0.3.0 pull request failed and **I spotted it first** — the OpenAPI drift guard reported a one-line difference: `info.version` said 0.2.0 while the package was 0.3.0. I pasted the failing log into the chat; the AI immediately diagnosed the root cause (it had run `openapi:export` BEFORE bumping `package.json` when closing the version — the document embeds the version, so the committed file went stale the moment the bump landed) and prepared the one-line fix. A detail worth recording: the AI then tried to push as I asked — and the deny list machine-blocked it, exactly as designed; it committed, and I pushed. (2) When I asked for the next version's branch, **the AI refused to branch and stopped**: it checked the repo state first and found that my tag `v0.3.0` pointed at the v0.2.0 merge commit (I had tagged before merging the PR) and that `v0.1.0` did not exist at all. It gave me the exact commands to delete, re-point and push the tags, and only branched once main was verified.
+
+**My intervention:** I reported the CI failure and executed the push and the tag fixes (the remote is mine — rule 16). The AI folded the export-ordering lesson into the closing checklist of every future prompt, starting with v0.4.0, where the order held.
+
+**Lesson:** The collaboration works in both directions: I catch what lands in front of my eyes (a red CI run), the AI catches what requires checking state nobody looks at voluntarily (where tags actually point). And a guardrail blocking the AI's own hand — the denied push — is not friction, it is the system working.

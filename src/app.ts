@@ -13,12 +13,19 @@ import type { ZodTypeProvider } from 'fastify-type-provider-zod';
 import pkg from '../package.json' with { type: 'json' };
 import { LANGUAGES } from './i18n/constants.js';
 import { TRANSLATIONS, formatEnglishMessage } from './i18n/loader.js';
+import { CURRENCIES_CACHE_CONTROL } from './lib/constants.js';
 import { EnvVar, ErrorCode, ErrorKey } from './lib/enums.js';
-import type { ApiErrorBody, ErrorParams } from './lib/types.js';
+import type { ApiErrorBody, BuildAppDeps, ErrorParams } from './lib/types.js';
+import { RateProviderUnavailableError } from './rates/errors.js';
 import { createRatesProvider } from './rates/provider.js';
 import type { RatesProvider } from './rates/types.js';
-import { errorResponseSchema, healthResponseSchema, initResponseSchema } from './schemas.js';
-import type { HealthResponse, InitResponse } from './schemas.js';
+import {
+	currenciesResponseSchema,
+	errorResponseSchema,
+	healthResponseSchema,
+	initResponseSchema,
+} from './schemas.js';
+import type { CurrenciesResponse, HealthResponse, InitResponse } from './schemas.js';
 
 const INIT_RESPONSE: InitResponse = { languages: [...LANGUAGES], translations: TRANSLATIONS };
 
@@ -108,9 +115,10 @@ const notFoundHandler = async (_request: FastifyRequest, reply: FastifyReply): P
  * @name errorHandler
  *
  * @description The central error handler (proposal §3). Normalizes every error into the unified
- * shape: Fastify 4xx internals (JSON parse, body over the limit, content type) become
- * VALIDATION_ERROR with the original status; anything else is a 500 INTERNAL_ERROR with no
- * internals in the response — the full error goes into the log with the request id (rule 24).
+ * shape: an unreachable rate provider (no stale copy) becomes 502 RATE_PROVIDER_ERROR; Fastify
+ * 4xx internals (JSON parse, body over the limit, content type) become VALIDATION_ERROR with
+ * the original status; anything else is a 500 INTERNAL_ERROR with no internals in the
+ * response — the full error goes into the log with the request id (rule 24).
  *
  * @param {FastifyError} error the thrown error
  * @param {FastifyRequest} request the request being served
@@ -123,6 +131,12 @@ const errorHandler = async (
 	request: FastifyRequest,
 	reply: FastifyReply,
 ): Promise<void> => {
+	if (error instanceof RateProviderUnavailableError) {
+		await reply
+			.status(502)
+			.send(buildErrorBody(ErrorCode.RATE_PROVIDER_ERROR, ErrorKey.RATE_PROVIDER));
+		return;
+	}
 	const statusCode = error.statusCode ?? 500;
 	if (statusCode >= 400 && statusCode < 500) {
 		await reply
@@ -151,6 +165,24 @@ const createHealthHandler = (ratesProvider: RatesProvider) => (): HealthResponse
 	uptime: Math.round(process.uptime()),
 	ratesCacheAge: ratesProvider.getCacheAgeSeconds(),
 });
+
+/**
+ * @name createCurrenciesHandler
+ *
+ * @description Builds the GET /api/currencies handler (proposal §3): the intersection of the
+ * currency names and the cached rates from the provider, with Cache-Control: public,
+ * max-age=3600 — the browser/CDN side of the caching; the server side is the provider cache.
+ *
+ * @param {RatesProvider} ratesProvider the provider serving the currencies
+ *
+ * @returns {(request: FastifyRequest, reply: FastifyReply) => Promise<CurrenciesResponse>} the route handler
+ */
+const createCurrenciesHandler =
+	(ratesProvider: RatesProvider) =>
+	async (_request: FastifyRequest, reply: FastifyReply): Promise<CurrenciesResponse> => {
+		void reply.header('cache-control', CURRENCIES_CACHE_CONTROL);
+		return { currencies: await ratesProvider.getCurrencies() };
+	};
 
 /**
  * @name initHandler
@@ -184,11 +216,14 @@ const initHandler = async (
  * @description Builds the pure Fastify app with all the logic (adapter architecture, proposal
  * §2): the Zod type provider, security headers, Swagger at /docs generated from the Zod schemas,
  * the request-id and log policy hooks, the central error handler and the routes. Adapters
- * (server.ts, lambda.ts) only host the returned instance.
+ * (server.ts, lambda.ts) only host the returned instance. The optional deps are the DI seam
+ * for tests (rule 1) — production callers pass nothing.
+ *
+ * @param {BuildAppDeps} deps optional overrides (the rates provider)
  *
  * @returns {Promise<FastifyInstance>} the configured Fastify instance, not yet listening
  */
-export const buildApp = async (): Promise<FastifyInstance> => {
+export const buildApp = async (deps?: BuildAppDeps): Promise<FastifyInstance> => {
 	const nodeEnv = process.env[EnvVar.NODE_ENV];
 	const app = fastify({
 		logger: nodeEnv === 'test' ? false : { level: nodeEnv === 'production' ? 'info' : 'debug' },
@@ -219,7 +254,7 @@ export const buildApp = async (): Promise<FastifyInstance> => {
 	app.setNotFoundHandler(notFoundHandler);
 	app.setErrorHandler(errorHandler);
 
-	const ratesProvider = createRatesProvider();
+	const ratesProvider = deps?.ratesProvider ?? createRatesProvider();
 
 	const typed = app.withTypeProvider<ZodTypeProvider>();
 
@@ -236,6 +271,27 @@ export const buildApp = async (): Promise<FastifyInstance> => {
 			},
 		},
 		createHealthHandler(ratesProvider),
+	);
+
+	typed.get(
+		'/api/currencies',
+		{
+			schema: {
+				summary: 'Supported currencies',
+				description:
+					'Currency codes mapped to display names for the conversion selects. The response is ' +
+					'the INTERSECTION of the OER currency names and the cached rates — only currencies ' +
+					'that have a rate are listed, so the list never diverges from what /api/convert ' +
+					'accepts. Carries Cache-Control: public, max-age=3600.',
+				tags: ['conversion'],
+				response: {
+					200: currenciesResponseSchema,
+					500: errorResponseSchema,
+					502: errorResponseSchema,
+				},
+			},
+		},
+		createCurrenciesHandler(ratesProvider),
 	);
 
 	typed.get(

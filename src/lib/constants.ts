@@ -10,3 +10,6 @@ export const LOCAL_DYNAMO_CREDENTIALS: { accessKeyId: string; secretAccessKey: s
 };
 
 export const DEFAULT_STATS_TABLE = 'ConversionStats';
+
+// /api/currencies HTTP cache (§3) — the browser/CDN side; the server side is the provider cache
+export const CURRENCIES_CACHE_CONTROL = 'public, max-age=3600';

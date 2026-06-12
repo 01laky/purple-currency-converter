@@ -42,6 +42,16 @@ export const initResponseSchema = z.object({
 		.describe('The complete translation tree of every supported language'),
 });
 
+export const currenciesResponseSchema = z.object({
+	currencies: z
+		.record(z.string(), z.string())
+		.describe(
+			'Supported currency codes mapped to display names — the intersection with the cached rates: only currencies that have a rate are listed',
+		),
+});
+
 export type HealthResponse = z.infer<typeof healthResponseSchema>;
 
 export type InitResponse = z.infer<typeof initResponseSchema>;
+
+export type CurrenciesResponse = z.infer<typeof currenciesResponseSchema>;

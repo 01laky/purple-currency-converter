@@ -158,3 +158,23 @@ Record template:
 **My intervention:** I ran the sst dev verification against my AWS account: the stack came up, and the root URL answered with the unified 404 from the Function URL — which in one response proves the out-of-root handler bundled (the pinned risk never materialized), the app boots on Lambda, the adapter and the central error handler work, and the message arrived from en.json (the static i18n imports survived esbuild). The convert/stats/docs legs (the OER secret, the DynamoDB write, the copyFiles assets) stay for the v0.8.0 production verification — that version is the deploy verification by design.
 
 **Lesson:** npm resolves "the nearest package.json" with no respect for intended module boundaries — in a no-sharing monorepo, creating the boundary file FIRST is part of creating the boundary. And the closing-order discipline (bump before export) has now paid for its CI lesson twice over.
+
+## [2026-06-12 13:39] — v0.8.0: the README prompt review — a rule clarified and a badge that would have lied
+
+**Context:** Reviewing the AI's draft of `prompt/v0.8.0.md` (the milestone version — the production deploy, the live URL, the README).
+
+**What happened:** (1) The prompt recommended an MIT license but silently ignored WHERE it lives: rule 18 allows only four MD files in the repo root, and a LICENSE file — extension-less — sits in the rule's blind spot; the AI would not have known whether to create the file or mention the license only in the README. Resolved in two layers: the FORM — when a license exists, it is a root LICENSE file (GitHub reads it machine-readably only from the file) — and rule 18 clarified to scope itself against documentation sprawl, leaving conventional non-MD root artifacts (LICENSE, package.json, …) explicitly outside it. (2) The badge plan said "99 passed" as a static shield — a number that would have gone stale silently at v0.9.0 the moment the frontend tests arrive; rule 15 implies a manual per-version update, but the prompt never said so. The AI proposed the stronger fix over both of my options: the tests badge becomes the LIVE GitHub Actions workflow badge (the repo has CI since v0.1.0 — the badge reflects the actual run and can never drift), the static version badge stays under the rule-15 ritual, and the exact counts keep living in the CHANGELOG where they are already maintained.
+
+**My intervention:** Both findings written into the prompt; the rule-18 clarification into CLAUDE.md. On the license itself I decided: none for now — all rights reserved by default, the README states it honestly, revisited at 1.0.0 before the submission.
+
+**Lesson:** A README is the one artifact with no test guarding it — anything hardcoded there (a count, a URL, a version) needs either a ritual that maintains it or a source that cannot go stale. Prefer the source.
+
+## [2026-06-12 13:47] — v0.8.0: Level 1 went live, and three deferred proofs landed at once
+
+**Context:** The milestone version — the production deploy and the README. I deployed (`sst secret set` + `sst deploy --stage production`, my side of the deny-list split) and handed the AI only the live URL; it ran the whole verification sweep itself and evaluated every leg.
+
+**What happened:** Seven checks, seven passes — and the sweep retroactively closed three proofs earlier versions had consciously deferred: the OER secret worked (the first live call returned 172 currencies), the production DynamoDB write worked (one conversion → `totalConversions: 1`, `totalAmountEur: 100`, `topTargetCurrency: CZK`), and the Swagger UI CSS answered 200 — the load-bearing `../` in copyFiles from my v0.7.0 prompt review survived contact with production. Two details worth keeping: the production `/api/init` ETag is byte-identical to the local one (the texts and the hash function are deterministic across environments — the contract behaves), and `ratesCacheAge` moved from `null` to `20` between the first and the last health call — the in-memory cache observable from the outside, exactly as §3 intended. The validation catalog (400 keys, the 422 with `params.code`) answered over the public internet exactly as the tests promised.
+
+**My intervention:** The deploy and the secret were mine; the sweep evaluation, the README (written before the URL existed, completed after — rule 19), the live URL fill-in and the closing were the AI's.
+
+**Lesson:** Deferring a verification is honest only when something later is DESIGNED to catch it — the v0.7.0 "open legs" worked because v0.8.0's sweep listed them by name. A deferral without a named catcher is just a hope.

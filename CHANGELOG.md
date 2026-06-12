@@ -4,6 +4,24 @@ All notable changes to this project are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html). Every entry carries the datetime the version was closed — together with the AI_DIARY.md datetimes it is the source of the submission time budget (rule 14).
 
+## [0.9.0] — 2026-06-12 14:39
+
+**Level 2 starts: the frontend base.**
+
+### Added
+
+- **The monorepo move** — the API lives in `api/` (`git mv`, history preserved); the root keeps the repo-wide artifacts; the SST paths shifted to `../api/…` exactly as the v0.7.0 review planned; the CI api job runs in its working directory; the PostToolUse hook needed NOTHING — the v0.0.0 audit fix waited for exactly this moment.
+- **`web/` — the React 19 + Vite frontend base**: strict TS with the api-grade lint rules, the design tokens in `_tokens.scss` taken VALUE BY VALUE from the committed Figma export (`docs/figma/style`), both layouts (the 920 px grid switch), Roboto self-hosted.
+- **The generated API client** — orval from `api/openapi.json` into the committed `web/src/api/generated/` (`axios-functions`, every call through the custom mutator with the explicit `VITE_API_URL ?? ''` same-origin fallback and the `ErrorCode`/`key` error mapping); the CI web job guards the client drift and the build.
+- **The boot and i18n** — the full-page phase until `/api/init` + `/api/currencies`; i18next under the pinned no-fallback trio (`fallbackLng: false`, a THROWING `parseMissingKeyHandler`, `returnEmptyString: false`); the §10 language chain (localStorage → browser → en); the single hardcoded string is the init-failure fallback; a currencies failure offers a translated retry.
+- **The converter** — the Figma form card with react-hook-form (the EXPLICIT Convert action, double-submit prevention, a comma decimal accepted), two own-implementation ARIA comboboxes (filter/arrows/Enter/Esc/outside-click, the mutual currency exclusion) and the Result card with the reserved space; `formatMoney`/`formatCount` as the custom deterministic Figma-literal formatters (a regular U+0020 space — see Fixed).
+- **CORS for the local web dev** — `@fastify/cors` with the exact `FRONTEND_ORIGIN` (never `*`), registered outside production only; `ui.retry` joined the §3 catalog (§10 demands a retry option and the catalog lacked its label).
+- **Tests** — api 101 (+2 CORS), web 25 new: the boot phases, the form including the validation block and the translated API error, the combobox behaviors and the exclusion, the format literals (the U+0020 assertion), the mutator base-URL fallback and the error mapping, the language chain.
+
+### Fixed
+
+- **The OpenAPI document was technically invalid since v0.2.0** — the recursive `z.lazy` translation-tree schema serialized as a dangling `$ref` (`#/components/schemas/schema0`); Swagger UI silently tolerated it, orval (the first REAL consumer of the contract) refused. The schema is now bounded to the fixed §3 catalog depth — and a deeper tree fails the response serializer loudly instead of hiding.
+
 ## [0.8.0] — 2026-06-12 13:47
 
 **The milestone: Level 1 of the assignment complete, including both bonuses (the deploy + IaC).**
@@ -108,6 +126,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 - **AI collaboration diary (`AI_DIARY.md`)** — created on day one, with the record template in the file header.
 - **Repo hygiene (`.gitignore`)** — secrets (`.env*` except `.env.example`), local AI permissions (`.claude/settings.local.json`), dependencies and build outputs.
 
+[0.9.0]: https://github.com/01laky/purple-currency-converter/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/01laky/purple-currency-converter/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/01laky/purple-currency-converter/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/01laky/purple-currency-converter/compare/v0.5.0...v0.6.0

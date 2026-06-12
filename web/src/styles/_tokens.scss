@@ -1,0 +1,61 @@
+// Every value comes from the committed Figma export (docs/figma/style) — nothing eyeballed
+// (the figma-to-scss skill). Named by meaning, never by value.
+
+$font-family: 'Roboto', sans-serif;
+
+// page
+$color-page-bg: #eaecef;
+$color-heading: #000000;
+
+// the form card
+$color-card-bg: #522473;
+$card-radius: 10px;
+$card-shadow: 0 0 13px rgba(0, 0, 0, 0.27);
+$card-width-web: 860px;
+$card-padding-web: 38px; // 472 − 434 (the field left edge inside the card)
+$card-width-mobile: 391px;
+$card-padding-mobile: 27px; // 44 − 17
+$field-gap-web: 17px; // 739 − (472 + 250)
+$field-gap-mobile: 24px;
+$label-gap: 8px; // field top 297 − (label top 271 + height 18)
+
+// the button (the design uses a second purple here)
+$color-button-bg: #522974;
+$button-radius: 6px;
+$button-shadow: drop-shadow(4px 4px 6px rgba(0, 0, 0, 0.11));
+$button-height: 52px;
+$button-padding-x: 26px;
+$button-gap-top: 32px; // button top 445 − card bottom 413
+
+// the fields
+$color-field-bg: #ffffff; // grey-0
+$color-field-border: #cccccc; // grey-40
+$color-field-text: #141414; // grey-90
+$color-text-muted: #4d4d4d; // grey-80
+$input-radius: 6px;
+$select-radius: 5px;
+$field-height: 44px;
+$field-width-web: 250px;
+$field-padding-x: 11px;
+
+// typography
+$font-h1: 400 32px/40px $font-family;
+$font-label: 500 15px/18px $font-family; // the card labels and the button text
+$font-field: 400 14px/16px $font-family;
+$font-result-label: 400 15px/18px $font-family;
+$font-result-value: 500 28px/33px $font-family;
+$letter-spacing-label: 0.01em;
+
+// the result card
+$result-border-color: rgba(0, 0, 0, 0.2);
+$result-radius: 6px;
+$result-padding: 24px;
+$result-gap: 24px;
+$result-width-web: 247px;
+$result-gap-top: 100px; // result top 545 − button bottom 497 (visual rhythm; web frame)
+$color-divider: rgba(0, 0, 0, 0.2);
+
+// layout rhythm
+$heading-top-web: 120px;
+$heading-top-mobile: 149px;
+$heading-gap: 40px; // card top 200 − (heading 120 + 40)

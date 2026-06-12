@@ -1,0 +1,53 @@
+@use '../../styles/tokens' as t;
+
+.wrapper {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	gap: t.$label-gap;
+}
+
+.label {
+	font: t.$font-label;
+	letter-spacing: t.$letter-spacing-label;
+	color: t.$color-field-bg;
+}
+
+.input {
+	height: t.$field-height;
+	padding: 0 t.$field-padding-x;
+	font: t.$font-field;
+	letter-spacing: t.$letter-spacing-label;
+	color: t.$color-field-text;
+	background: t.$color-field-bg;
+	border: 1px solid t.$color-field-border;
+	border-radius: t.$select-radius;
+}
+
+.listbox {
+	position: absolute;
+	top: 100%;
+	left: 0;
+	right: 0;
+	z-index: 1;
+	max-height: 240px;
+	margin: 4px 0 0;
+	padding: 0;
+	overflow-y: auto;
+	list-style: none;
+	background: t.$color-field-bg;
+	border: 1px solid t.$color-field-border;
+	border-radius: t.$select-radius;
+}
+
+.option,
+.optionActive {
+	padding: 10px t.$field-padding-x;
+	font: t.$font-field;
+	color: t.$color-field-text;
+	cursor: pointer;
+}
+
+.optionActive {
+	background: t.$color-page-bg;
+}

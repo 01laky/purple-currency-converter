@@ -1,6 +1,6 @@
 # Purple currency converter
 
-![Version](https://img.shields.io/badge/version-0.8.0-blue)
+![Version](https://img.shields.io/badge/version-0.9.0-blue)
 ![Node](https://img.shields.io/badge/node-%E2%89%A522-339933?logo=node.js&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white)
 [![CI](https://github.com/01laky/purple-currency-converter/actions/workflows/ci.yml/badge.svg)](https://github.com/01laky/purple-currency-converter/actions/workflows/ci.yml)
@@ -36,7 +36,7 @@ Design notes and conscious trade-offs:
 
 **Live URL (production):** <https://m5hxzqekb4av5lk2slzqxen47i0ixdfn.lambda-url.eu-central-1.on.aws> — try [`/health`](https://m5hxzqekb4av5lk2slzqxen47i0ixdfn.lambda-url.eu-central-1.on.aws/health) or the interactive [`/docs`](https://m5hxzqekb4av5lk2slzqxen47i0ixdfn.lambda-url.eu-central-1.on.aws/docs)
 
-Interactive documentation: **`GET /docs`** (Swagger UI, available in production too); the raw OpenAPI document at `/docs/json`; the committed contract artifact in [`openapi.json`](openapi.json).
+Interactive documentation: **`GET /docs`** (Swagger UI, available in production too); the raw OpenAPI document at `/docs/json`; the committed contract artifact in [`api/openapi.json`](api/openapi.json).
 
 ### `POST /api/convert`
 
@@ -99,11 +99,23 @@ Prerequisites: Node 22 (`nvm use` picks it up from `.nvmrc`), Docker (for dynamo
 
 ```bash
 nvm use
+cd api
 npm install
 npm run setup            # starts dynamodb-local (:8002), creates the table, copies .env
-# put your App ID into .env:  OER_API_KEY=<app id>
+# put your App ID into api/.env:  OER_API_KEY=<app id>
 npm run dev              # the API on http://localhost:3000  (Swagger at /docs)
 npm run verify:api       # typecheck + lint + tests
+```
+
+And the frontend (the API must be running):
+
+```bash
+cd web
+npm install
+cp .env.example .env     # VITE_API_URL=http://localhost:3000
+npm run dev              # the app on http://localhost:5173
+npm run verify:web       # typecheck + lint + tests
+npm run generate:api     # regenerate the client after an api contract change
 ```
 
 ### AWS
@@ -116,7 +128,7 @@ npx sst deploy --stage production    # prints the live Function URL
 
 ### Environment variables
 
-The complete list lives in [`.env.example`](.env.example):
+The complete list lives in [`api/.env.example`](api/.env.example):
 
 | Variable          | Role                                                        | Local value                 |
 | ----------------- | ----------------------------------------------------------- | --------------------------- |
@@ -124,6 +136,9 @@ The complete list lives in [`.env.example`](.env.example):
 | `DYNAMO_ENDPOINT` | the dynamodb-local endpoint; unset/empty = the AWS mode     | `http://localhost:8002`     |
 | `STATS_TABLE`     | the statistics table name                                   | `ConversionStats` (default) |
 | `OER_API_KEY`     | the openexchangerates App ID (a secret — SST secret on AWS) | — (required)                |
+| `FRONTEND_ORIGIN` | the exact CORS origin for the local web dev (never `*`; production is same-origin, no CORS) | `http://localhost:5173` (default) |
+
+The frontend has its own [`web/.env.example`](web/.env.example): `VITE_API_URL` — the API base for the local dev; EMPTY in the production build (same-origin relative calls through the Router, v0.10.0).
 
 ## Documentation
 
@@ -147,13 +162,14 @@ The complete list lives in [`.env.example`](.env.example):
 | 0.6.0        | the DynamoDB statistics and `GET /api/stats`        | ✅     |
 | 0.7.0        | SST v4 (IaC) and the Lambda adapter                 | ✅     |
 | 0.8.0        | the production deploy and the live URL              | ✅     |
-| 0.9.0–0.10.0 | the React frontend per the Figma design (Level 2)   | ⏳     |
+| 0.9.0        | the frontend base — the monorepo, the Figma tokens, the generated client, the converter | ✅ |
+| 0.10.0       | the frontend completion + the same-origin deploy (Level 2) | ⏳ |
 | 0.11.0       | hardening (the rate limit, edge cases)              | ⏳     |
 | 1.0.0        | the submission (the future vision, the time budget) | ⏳     |
 
 ## Tech Stack
 
-TypeScript (strict — no `any`, no type assertions) · Fastify 5 + Zod 4 (`fastify-type-provider-zod` — one schema source for validation, types and OpenAPI) · DynamoDB · SST v4 (AWS Lambda, IaC) · Vitest.
+TypeScript (strict — no `any`, no type assertions) · Fastify 5 + Zod 4 (`fastify-type-provider-zod` — one schema source for validation, types and OpenAPI) · DynamoDB · SST v4 (AWS Lambda, IaC) · React 19 + Vite (SCSS Modules, the design tokens from the committed Figma export) · orval (the API client GENERATED from `openapi.json` — the backend and the frontend share no code) · Vitest + React Testing Library.
 
 ## AI collaboration
 

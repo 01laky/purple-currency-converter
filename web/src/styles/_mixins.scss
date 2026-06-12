@@ -1,0 +1,6 @@
+// The breakpoint per proposal §10 — mobile is ≤ 919 px, the layouts switch by grid template
+@mixin mobile {
+	@media (max-width: 919px) {
+		@content;
+	}
+}

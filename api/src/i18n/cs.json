@@ -1,0 +1,29 @@
+{
+	"errors": {
+		"notFound": "Zdroj nebyl nalezen",
+		"internal": "Interní chyba serveru",
+		"rateProvider": "Poskytovatel směnných kurzů je nedostupný",
+		"rateLimited": "Příliš mnoho požadavků, zkuste to prosím později",
+		"unsupportedCurrency": "Měna {{code}} není podporována",
+		"validation": {
+			"invalidRequest": "Neplatný požadavek",
+			"amountNotPositive": "Částka musí být kladné číslo",
+			"amountTooLarge": "Částka překračuje maximální podporovanou hodnotu",
+			"amountTooManyDecimals": "Částka může mít nejvýše 2 desetinná místa",
+			"invalidCurrencyCode": "Kód měny musí mít 3 písmena",
+			"sameCurrency": "Zdrojová a cílová měna se musí lišit"
+		}
+	},
+	"ui": {
+		"title": "Purple převodník měn",
+		"amountToConvert": "Částka k převodu",
+		"from": "Z",
+		"to": "Na",
+		"convertCurrency": "Převést měnu",
+		"result": "Výsledek",
+		"numberOfCalculations": "Počet provedených výpočtů",
+		"topTargetCurrency": "Nejčastější cílová měna",
+		"totalAmountEur": "Celková částka v EUR",
+		"retry": "Zkusit znovu"
+	}
+}

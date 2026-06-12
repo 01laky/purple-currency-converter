@@ -132,3 +132,19 @@ Record template:
 **My intervention:** None during the implementation — the prompt carried the whole review.
 
 **Lesson:** The review effort moved entirely to the prompt stage and the implementation became transcription plus verification — the second version in a row confirming the pattern. The deeper the prompt review, the more boring the implementation; in money-and-persistence code, boring is exactly the goal.
+
+## [2026-06-12 13:12] — v0.7.0: the infra prompt review — four findings
+
+**Context:** Reviewing the AI's draft of `prompt/v0.7.0.md` (the SST infrastructure — deploy/, the Lambda adapter, the esbuild traps).
+
+**What happened:** (1) I caught a path bug in the prompt's own copyFiles spec: `deploy/package.json` has a single dependency (`sst`), so `@fastify/swagger-ui` lives in the ROOT `node_modules` — but `copyFiles.from` resolves relative to `sst.config.ts` in `deploy/`, so the drafted `node_modules/@fastify/swagger-ui/static` would have copied a non-existent directory and Swagger UI would have 404'd on Lambda. The fix is one load-bearing `../`. The AI confirmed it, connected it to the already-pinned out-of-root handler situation (when the handler lives in `../src`, its assets live in `../node_modules`) and pinned the follow-up: at the v0.9.0 monorepo move the path shifts once more, to `../api/node_modules/...` — now part of the move checklist.
+
+(2) I added the MANDATORY first line of every SST v4 config the draft omitted: /// <reference path="./.sst/platform/config.d.ts" /> — without it TypeScript cannot see the $config/$app/sst.* globals and the config does not typecheck. The AI connected it back to its own vague "lint exception if needed" note: the exception is not hypothetical, the triple-slash-reference rule forbids exactly this mandatory line, so the file-scoped exception is now pinned; and it added the nuance that .sst/ is generated and gitignored, so the reference resolves only after the first SST run.
+
+(3) The draft said resolveSwaggerStaticDir looks "next to the module" without saying HOW — and in an ESM project ("type": "module") that phrase is a trap: __dirname does not exist and process.cwd() tracks the working directory, not the file. I pinned the exact pattern: path.join(path.dirname(fileURLToPath(import.meta.url)), 'static'). The AI added why it holds on Lambda: SST bundles the function as ESM, so import.meta.url points at the bundle file and copyFiles places static/ right next to it.
+
+(4) The smoke-test fixture format: the draft said "an API Gateway event fixture", but SST url: true creates a Lambda FUNCTION URL — payload format 2.0 (version: '2.0', requestContext.http, rawPath), not the API GW v1 shape with httpMethod. The AI added the honest nuance that @fastify/aws-lambda handles both formats at runtime, so production would not crash — the real cost is subtler and worse: a v1 fixture tests an adapter branch production never executes, which is false confidence dressed as a passing test. The fixture is now pinned as v2.
+
+**My intervention:** All four findings written into the prompt before any infrastructure code exists.
+
+**Lesson:** No-sharing module boundaries (deploy/ owns only sst) are an architectural win that quietly relocates every relative path crossing them — a review must walk each such path from where it will actually be resolved, not from where the reader happens to sit. And a "maybe we will need an exception" in a prompt is a smell: either the need is provable now (then pin it with its cause) or the sentence is noise.

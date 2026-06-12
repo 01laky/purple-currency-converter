@@ -29,7 +29,8 @@
 
 	@include m.mobile {
 		width: t.$card-width-mobile;
-		max-width: calc(100vw - 34px);
+		// the page provides the shared 17px gutter — the card just fills it
+		max-width: 100%;
 		padding: t.$card-padding-mobile;
 	}
 }

@@ -12,10 +12,10 @@
 
 	@include m.mobile {
 		padding-top: t.$heading-top-mobile;
-		// the title (and everything else) must not touch the viewport edges (the human's
-		// report) — the side margin mirrors the Figma mobile frame (428 − 391 card = ~18/2)
-		padding-left: 16px;
-		padding-right: 16px;
+		// ONE shared gutter for everything (the human's report: the title must keep the same
+		// side spacing the purple card has) — 17px = the card's former 34px/2 inset
+		padding-left: 17px;
+		padding-right: 17px;
 	}
 }
 
